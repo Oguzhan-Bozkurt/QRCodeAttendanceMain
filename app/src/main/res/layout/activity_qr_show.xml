@@ -18,6 +18,14 @@
             android:textStyle="bold"
             android:layout_marginBottom="12dp" />
 
+        <TextView
+            android:id="@+id/tvJoined"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Katılan: -"
+            android:textSize="16sp"
+            android:layout_marginTop="8dp"/>
+
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="wrap_content"
@@ -62,6 +70,31 @@
             android:layout_height="wrap_content"
             android:text="Yoklamayı Bitir"
             android:layout_marginTop="16dp"/>
+
+        <!-- Süre seç + Başlat kutusu (aktif oturum YOKKEN görünecek) -->
+        <LinearLayout
+            android:id="@+id/boxStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:layout_marginTop="12dp">
+
+            <Spinner
+                android:id="@+id/spMinutes"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:entries="@array/minutes_labels" />
+
+            <Button
+                android:id="@+id/btnStart"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Başlat"
+                android:layout_marginStart="12dp"/>
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvStatus"

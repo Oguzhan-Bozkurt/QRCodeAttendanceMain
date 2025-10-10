@@ -3,7 +3,6 @@ package com.example.qrkodlayoklama.ui.attendance;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.widget.Toast;
 
@@ -52,11 +51,28 @@ public class QrScanActivity extends AppCompatActivity {
                 // Sunucuya yoklama işaretle
                 ApiClient.attendance().mark(new MarkRequest(secret)).enqueue(new Callback<ResponseBody>() {
                     @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
+                        String msg;
                         if (resp.isSuccessful()) {
-                            Toast.makeText(QrScanActivity.this, "Yoklama gönderildi", Toast.LENGTH_SHORT).show();
+                            msg = "Yoklama gönderildi";
                         } else {
-                            Toast.makeText(QrScanActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                            switch (resp.code()) {
+                                case 404:
+                                    msg = "Aktif yoklama bulunamadı ya da kod süresi dolmuş.";
+                                    break;
+                                case 409:
+                                    msg = "Bu oturuma daha önce yoklama vermişsiniz.";
+                                    break;
+                                case 400:
+                                    msg = "Geçersiz QR kodu.";
+                                    break;
+                                case 401:
+                                    msg = "Oturumunuzun süresi dolmuş olabilir. Lütfen tekrar giriş yapın.";
+                                    break;
+                                default:
+                                    msg = "Hata: " + resp.code();
+                            }
                         }
+                        Toast.makeText(QrScanActivity.this, msg, Toast.LENGTH_LONG).show();
                         finish();
                     }
                     @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
@@ -94,7 +110,6 @@ public class QrScanActivity extends AppCompatActivity {
         integrator.setPrompt("QR kodu taratın");
         integrator.setBeepEnabled(true);
         integrator.setOrientationLocked(true);
-
         Intent intent = integrator.createScanIntent();
         scanLauncher.launch(intent);
     }
@@ -114,4 +129,5 @@ public class QrScanActivity extends AppCompatActivity {
         }
         return null;
     }
+
 }

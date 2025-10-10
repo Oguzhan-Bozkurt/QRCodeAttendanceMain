@@ -10,8 +10,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.LinearLayout;
+import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,7 +42,7 @@ public class QrShowActivity extends AppCompatActivity {
     public static final String EXTRA_COURSE_ID = "courseId";
 
     private ProgressBar progress;
-    private TextView tvTitle, tvInfo, tvSecret, tvExpire, tvStatus;
+    private TextView tvTitle, tvInfo, tvSecret, tvExpire, tvStatus, tvJoined;
     private ImageView imgQr;
     private Long courseId;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -47,6 +50,11 @@ public class QrShowActivity extends AppCompatActivity {
     private Instant expiresAt;
     private Button btnStop, btnRefresh;
     private Call<AttendanceSessionDto> inflight;
+    private boolean polling = false;
+    private Runnable pollTask;
+    private Spinner spMinutes;
+    private LinearLayout boxStart;
+    private Button btnStart;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,11 +76,27 @@ public class QrShowActivity extends AppCompatActivity {
         btnStop = findViewById(R.id.btnStop);
         tvStatus  = findViewById(R.id.tvStatus);
         btnRefresh= findViewById(R.id.btnRefresh);
+        tvJoined = findViewById(R.id.tvJoined);
+        spMinutes = findViewById(R.id.spMinutes);
+        boxStart  = findViewById(R.id.boxStart);
+        btnStart  = findViewById(R.id.btnStart);
+
+        ArrayAdapter<CharSequence> adp =
+                ArrayAdapter.createFromResource(this, R.array.minutes_labels,
+                        android.R.layout.simple_spinner_item);
+        adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spMinutes.setAdapter(adp);
+
+        btnStart.setOnClickListener(v -> {
+            int mins = getSelectedMinutes();
+            startSession(mins);
+        });
 
         btnRefresh.setOnClickListener(v -> loadActive());
 
         btnStop.setOnClickListener(v -> {
             setLoading(true);
+
 
             ApiClient.attendance().stop(courseId).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
                 @Override public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call,
@@ -83,7 +107,9 @@ public class QrShowActivity extends AppCompatActivity {
                         if (tvInfo != null) tvInfo.setText("Yoklama oturumu kapatıldı.");
                         if (btnStop != null) btnStop.setEnabled(false);
                         if (tvSecret != null) tvSecret.setText("Kod:");
-                        if (tvExpire != null) tvExpire.setText("Kalan süre: -"); stopTicker();
+                        if (tvExpire != null) tvExpire.setText("Kalan süre: -");
+                        stopTicker();
+                        stopPolling();
                         Toast.makeText(QrShowActivity.this, "Oturum kapatıldı", Toast.LENGTH_SHORT).show();
                         showNoActive();
                     } else {
@@ -104,10 +130,21 @@ public class QrShowActivity extends AppCompatActivity {
         loadOrStart();
     }
 
+    private int getSelectedMinutes() {
+        String[] vals = getResources().getStringArray(R.array.minutes_values);
+        int idx = spMinutes.getSelectedItemPosition();
+        try { return Integer.parseInt(vals[idx]); } catch (Exception e) { return 10; }
+    }
+
     @Override protected void onDestroy() {
         super.onDestroy();
         if (inflight != null) inflight.cancel();
         stopTicker();
+    }
+
+    @Override protected void onStop() {
+        super.onStop();
+        stopPolling();
     }
 
     private void setLoading(boolean b) {
@@ -120,16 +157,15 @@ public class QrShowActivity extends AppCompatActivity {
         inflight = ApiClient.attendance().active(courseId);
         inflight.enqueue(new Callback<AttendanceSessionDto>() {
             @Override public void onResponse(Call<AttendanceSessionDto> call, Response<AttendanceSessionDto> resp) {
+                setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
                     bindSession(resp.body());
                 } else if (resp.code() == 404) {
-                    startSession(10); // aktif yoksa 10 dk’lık yeni oturum aç
+                    showNoActive();
                 } else if (resp.code() == 401) {
-                    setLoading(false);
                     Toast.makeText(QrShowActivity.this, "Oturum süresi doldu (401)", Toast.LENGTH_LONG).show();
                     finish();
                 } else {
-                    setLoading(false);
                     Toast.makeText(QrShowActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
                 }
             }
@@ -160,20 +196,26 @@ public class QrShowActivity extends AppCompatActivity {
 
     private void bindSession(AttendanceSessionDto dto) {
         setLoading(false);
+
+        if (imgQr != null)      imgQr.setVisibility(View.VISIBLE);
+        if (btnStop != null) {  btnStop.setEnabled(true); btnStop.setVisibility(View.VISIBLE); }
+        if (tvStatus != null) { tvStatus.setText(""); tvStatus.setVisibility(View.GONE); }
+        if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
+        if (boxStart != null)   boxStart.setVisibility(View.GONE);
+
         tvInfo.setText("Yoklama aktif");
         tvSecret.setText("Kod: " + dto.getSecret());
 
-        String payload = dto.getSecret();
-        imgQr.setImageBitmap(makeQr(payload, 900));
+        Bitmap bmp = makeQr(dto.getSecret(), 900);
+        if (bmp != null) imgQr.setImageBitmap(bmp);
 
-        // geri sayım
-        try {
-            expiresAt = parse(dto.getExpiresAt());
-        } catch (Exception e) {
-            expiresAt = null;
-        }
+        try { expiresAt = java.time.Instant.parse(dto.getExpiresAt()); }
+        catch (Exception e) { expiresAt = null; }
+
+        startPolling(courseId);
         startTicker();
     }
+
 
     private void startTicker() {
         stopTicker();
@@ -188,6 +230,8 @@ public class QrShowActivity extends AppCompatActivity {
                     tvExpire.setText("Süre doldu");
                     tvInfo.setText("Oturum kapandı");
                     imgQr.setAlpha(0.3f);
+                    stopPolling();
+                    showNoActive();
                     return;
                 }
                 long m = secs / 60;
@@ -232,13 +276,13 @@ public class QrShowActivity extends AppCompatActivity {
     }
 
     private void loadActive() {
-        setLoading(true); // varsa, yoksa kaldırın
+        setLoading(true);
         ApiClient.attendance().active(courseId).enqueue(new retrofit2.Callback<AttendanceSessionDto>() {
             @Override public void onResponse(retrofit2.Call<AttendanceSessionDto> call,
                                              retrofit2.Response<AttendanceSessionDto> resp) {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
-                    showActive(resp.body());
+                    bindSession(resp.body());
                 } else if (resp.code() == 404) {
                     showNoActive();
                 } else {
@@ -259,16 +303,23 @@ public class QrShowActivity extends AppCompatActivity {
         if (tvStatus != null) { tvStatus.setVisibility(View.GONE); tvStatus.setText(""); }
         if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
 
+        if (boxStart != null) boxStart.setVisibility(View.GONE);
     }
 
     private void showNoActive() {
+        stopTicker();
         if (imgQr != null) imgQr.setVisibility(View.GONE);
-        if (btnStop != null) { btnStop.setEnabled(false); }
+        if (btnStop != null) btnStop.setEnabled(false);
+
         if (tvStatus != null) {
             tvStatus.setText("Bu ders için aktif yoklama oturumu yok.");
             tvStatus.setVisibility(View.VISIBLE);
         }
         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
+
+        if (boxStart != null)   boxStart.setVisibility(View.VISIBLE);
+        tvSecret.setText("Kod:");
+        tvExpire.setText("Kalan süre: -");
     }
 
     private void showError(String msg) {
@@ -279,5 +330,62 @@ public class QrShowActivity extends AppCompatActivity {
             tvStatus.setVisibility(View.VISIBLE);
         }
         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
+    }
+
+    private void startPolling(long courseId) {
+        if (polling) return;
+        polling = true;
+        pollTask = pollRunnable(courseId);
+        handler.post(pollTask);
+    }
+
+    private void stopPolling() {
+        polling = false;
+        if (pollTask != null) {
+            handler.removeCallbacks(pollTask);
+            pollTask = null;
+        }
+    }
+
+    private Runnable pollRunnable(long courseId) {
+        return new Runnable() {
+            @Override public void run() {
+                if (!polling) return;
+
+                ApiClient.attendance().activeSummary(courseId)
+                        .enqueue(new retrofit2.Callback<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto>() {
+                            @Override public void onResponse(
+                                    retrofit2.Call<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> call,
+                                    retrofit2.Response<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> resp) {
+
+                                if (!polling) return;
+
+                                if (resp.isSuccessful() && resp.body() != null) {
+                                    long c = resp.body().getCount();
+                                    tvJoined.setText("Katılan: " + c);
+                                    if (polling && pollTask != null) {
+                                        handler.postDelayed(pollTask, 5000);
+                                    }
+                                } else if (resp.code() == 404) {
+                                    tvJoined.setText("Oturum kapandı");
+                                    stopPolling();
+                                } else {
+                                    if (polling && pollTask != null) {
+                                        handler.postDelayed(pollTask, 5000);
+                                    }
+                                }
+                            }
+
+                            @Override public void onFailure(
+                                    retrofit2.Call<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> call,
+                                    Throwable t) {
+                                if (!polling) return;
+                                if (polling && pollTask != null) {
+                                    handler.postDelayed(pollTask, 5000);
+                                }
+                            }
+                        });
+            }
+        };
     }
 }
