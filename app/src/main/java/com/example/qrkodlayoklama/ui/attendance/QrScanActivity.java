@@ -34,6 +34,7 @@ public class QrScanActivity extends AppCompatActivity {
                     return;
                 }
                 String content = scanResult.getContents();
+                Toast.makeText(this, "QR: " + content, Toast.LENGTH_SHORT).show(); // Deneme için
                 if (content == null || content.isEmpty()) {
                     Toast.makeText(this, "Boş QR", Toast.LENGTH_SHORT).show();
                     finish();
@@ -42,11 +43,13 @@ public class QrScanActivity extends AppCompatActivity {
 
                 // Beklenen format: ATT|<courseId>|<secret>
                 String secret = parseSecret(content);
+                Toast.makeText(this, "SECRET: " + secret, Toast.LENGTH_SHORT).show(); // Deneme için
                 if (secret == null) {
                     Toast.makeText(this, "Geçersiz QR", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
                 }
+                secret = secret.trim();
 
                 // Sunucuya yoklama işaretle
                 ApiClient.attendance().mark(new MarkRequest(secret)).enqueue(new Callback<ResponseBody>() {
@@ -115,19 +118,30 @@ public class QrScanActivity extends AppCompatActivity {
     }
 
     private @Nullable String parseSecret(String content) {
+        if (content == null) return null;
+        content = content.trim(); // <--- çok önemli
+
         // 1) ATT|<courseId>|<secret>
         if (content.startsWith("ATT|")) {
             String[] parts = content.split("\\|");
-            if (parts.length >= 3) return parts[2];
+            if (parts.length >= 3) return parts[2].trim(); // <--- güvenli
         }
-        // 2) Alternatif: URL içeriyorsa "...?secret=XXXX"
+
+        // 2) URL param: ...?secret=XXXX
         int idx = content.indexOf("secret=");
         if (idx >= 0) {
             String s = content.substring(idx + "secret=".length());
             int amp = s.indexOf('&');
-            return amp > 0 ? s.substring(0, amp) : s;
+            return (amp > 0 ? s.substring(0, amp) : s).trim(); // <--- güvenli
+        }
+
+        // 3) DÜZ SECRET (fallback)
+        // Bazı QR üreticileri düz metin verebilir; destekleyelim:
+        if (content.length() >= 8) { // çok kısa saçma içerikleri ele
+            return content;
         }
         return null;
     }
+
 
 }

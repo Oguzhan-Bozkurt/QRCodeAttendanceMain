@@ -96,8 +96,6 @@ public class QrShowActivity extends AppCompatActivity {
 
         btnStop.setOnClickListener(v -> {
             setLoading(true);
-
-
             ApiClient.attendance().stop(courseId).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
                 @Override public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call,
                                                  retrofit2.Response<okhttp3.ResponseBody> resp) {
@@ -206,8 +204,12 @@ public class QrShowActivity extends AppCompatActivity {
         tvInfo.setText("Yoklama aktif");
         tvSecret.setText("Kod: " + dto.getSecret());
 
-        Bitmap bmp = makeQr(dto.getSecret(), 900);
-        if (bmp != null) imgQr.setImageBitmap(bmp);
+        String payload = "ATT|" + courseId + "|" + dto.getSecret();
+        Bitmap bmp = makeQr(payload, 900);
+        if (bmp != null) {
+            imgQr.setImageBitmap(bmp);
+            imgQr.setAlpha(1f);
+        }
 
         try { expiresAt = java.time.Instant.parse(dto.getExpiresAt()); }
         catch (Exception e) { expiresAt = null; }
@@ -215,7 +217,6 @@ public class QrShowActivity extends AppCompatActivity {
         startPolling(courseId);
         startTicker();
     }
-
 
     private void startTicker() {
         stopTicker();
@@ -302,7 +303,6 @@ public class QrShowActivity extends AppCompatActivity {
         if (btnStop != null) { btnStop.setEnabled(true); btnStop.setVisibility(View.VISIBLE); }
         if (tvStatus != null) { tvStatus.setVisibility(View.GONE); tvStatus.setText(""); }
         if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
-
         if (boxStart != null) boxStart.setVisibility(View.GONE);
     }
 
