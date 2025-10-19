@@ -34,55 +34,38 @@ public class QrScanActivity extends AppCompatActivity {
                     return;
                 }
                 String content = scanResult.getContents();
-                Toast.makeText(this, "QR: " + content, Toast.LENGTH_SHORT).show(); // Deneme için
                 if (content == null || content.isEmpty()) {
                     Toast.makeText(this, "Boş QR", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
                 }
 
-                // Beklenen format: ATT|<courseId>|<secret>
-                String secret = parseSecret(content);
-                Toast.makeText(this, "SECRET: " + secret, Toast.LENGTH_SHORT).show(); // Deneme için
-                if (secret == null) {
+                Parsed parsed = parseCourseIdAndSecret(content);
+                if (parsed == null) {
                     Toast.makeText(this, "Geçersiz QR", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
                 }
-                secret = secret.trim();
 
-                // Sunucuya yoklama işaretle
-                ApiClient.attendance().mark(new MarkRequest(secret)).enqueue(new Callback<ResponseBody>() {
-                    @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
-                        String msg;
-                        if (resp.isSuccessful()) {
-                            msg = "Yoklama gönderildi";
-                        } else {
-                            switch (resp.code()) {
-                                case 404:
-                                    msg = "Aktif yoklama bulunamadı ya da kod süresi dolmuş.";
-                                    break;
-                                case 409:
-                                    msg = "Bu oturuma daha önce yoklama vermişsiniz.";
-                                    break;
-                                case 400:
-                                    msg = "Geçersiz QR kodu.";
-                                    break;
-                                case 401:
-                                    msg = "Oturumunuzun süresi dolmuş olabilir. Lütfen tekrar giriş yapın.";
-                                    break;
-                                default:
-                                    msg = "Hata: " + resp.code();
+                ApiClient.attendance().checkin(parsed.courseId, new MarkRequest(parsed.secret))
+                        .enqueue(new Callback<ResponseBody>() {
+                            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
+                                if (resp.isSuccessful()) {
+                                    Toast.makeText(QrScanActivity.this, "Yoklama gönderildi", Toast.LENGTH_SHORT).show();
+                                } else if (resp.code() == 404 || resp.code() == 410) {
+                                    Toast.makeText(QrScanActivity.this, "Aktif yoklama bulunamadı veya süresi doldu.", Toast.LENGTH_LONG).show();
+                                } else if (resp.code() == 409) {
+                                    Toast.makeText(QrScanActivity.this, "Bu oturuma zaten katıldınız.", Toast.LENGTH_LONG).show();
+                                } else {
+                                    Toast.makeText(QrScanActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                                }
+                                finish();
                             }
-                        }
-                        Toast.makeText(QrScanActivity.this, msg, Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                    @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Toast.makeText(QrScanActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                });
+                            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
+                                Toast.makeText(QrScanActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                                finish();
+                            }
+                        });
             });
 
     private final ActivityResultLauncher<String> cameraPermLauncher =
@@ -97,8 +80,6 @@ public class QrScanActivity extends AppCompatActivity {
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // Kamera izni var mı?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             startScan();
@@ -119,12 +100,12 @@ public class QrScanActivity extends AppCompatActivity {
 
     private @Nullable String parseSecret(String content) {
         if (content == null) return null;
-        content = content.trim(); // <--- çok önemli
+        content = content.trim();
 
         // 1) ATT|<courseId>|<secret>
         if (content.startsWith("ATT|")) {
             String[] parts = content.split("\\|");
-            if (parts.length >= 3) return parts[2].trim(); // <--- güvenli
+            if (parts.length >= 3) return parts[2].trim();
         }
 
         // 2) URL param: ...?secret=XXXX
@@ -132,16 +113,55 @@ public class QrScanActivity extends AppCompatActivity {
         if (idx >= 0) {
             String s = content.substring(idx + "secret=".length());
             int amp = s.indexOf('&');
-            return (amp > 0 ? s.substring(0, amp) : s).trim(); // <--- güvenli
+            return (amp > 0 ? s.substring(0, amp) : s).trim();
         }
 
         // 3) DÜZ SECRET (fallback)
-        // Bazı QR üreticileri düz metin verebilir; destekleyelim:
-        if (content.length() >= 8) { // çok kısa saçma içerikleri ele
+        if (content.length() >= 8) {
             return content;
         }
         return null;
     }
+    private static class Parsed {
+        final long courseId;
+        final String secret;
+        Parsed(long c, String s){ this.courseId = c; this.secret = s; }
+    }
 
+    @Nullable
+    private Parsed parseCourseIdAndSecret(String content) {
+        if (content != null && content.startsWith("ATT|")) {
+            String[] parts = content.split("\\|");
+            if (parts.length >= 3) {
+                try {
+                    long cId = Long.parseLong(parts[1]);
+                    String sec = parts[2] != null ? parts[2].trim() : null;
+                    if (sec != null && !sec.isEmpty()) {
+                        return new Parsed(cId, sec);
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+        }
+        if (content != null) {
+            String lower = content.toLowerCase();
+            int iCourse = lower.indexOf("courseid=");
+            int iSecret = lower.indexOf("secret=");
+            if (iCourse >= 0 && iSecret >= 0) {
+                try {
+                    String cPart = content.substring(iCourse + "courseId=".length());
+                    int amp = cPart.indexOf('&');
+                    String cStr = amp >= 0 ? cPart.substring(0, amp) : cPart;
+                    long cId = Long.parseLong(cStr.trim());
+
+                    String sPart = content.substring(iSecret + "secret=".length());
+                    int amp2 = sPart.indexOf('&');
+                    String sec = (amp2 >= 0 ? sPart.substring(0, amp2) : sPart).trim();
+
+                    if (!sec.isEmpty()) return new Parsed(cId, sec);
+                } catch (Exception ignored) {}
+            }
+        }
+        return null;
+    }
 
 }

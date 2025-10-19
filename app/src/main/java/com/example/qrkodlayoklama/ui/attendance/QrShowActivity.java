@@ -1,7 +1,6 @@
 package com.example.qrkodlayoklama.ui.attendance;
 
-import static java.time.Instant.parse;
-
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -40,21 +39,18 @@ import retrofit2.Response;
 public class QrShowActivity extends AppCompatActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
-
+    private boolean polling = false;
+    private Call<AttendanceSessionDto> inflight;
     private ProgressBar progress;
     private TextView tvTitle, tvInfo, tvSecret, tvExpire, tvStatus, tvJoined;
     private ImageView imgQr;
     private Long courseId;
     private Handler handler = new Handler(Looper.getMainLooper());
-    private Runnable ticker;
+    private Runnable ticker, pollTask;
     private Instant expiresAt;
-    private Button btnStop, btnRefresh;
-    private Call<AttendanceSessionDto> inflight;
-    private boolean polling = false;
-    private Runnable pollTask;
+    private Button btnStop, btnRefresh, btnStart, btnSeeJoined;
     private Spinner spMinutes;
     private LinearLayout boxStart;
-    private Button btnStart;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,6 +76,7 @@ public class QrShowActivity extends AppCompatActivity {
         spMinutes = findViewById(R.id.spMinutes);
         boxStart  = findViewById(R.id.boxStart);
         btnStart  = findViewById(R.id.btnStart);
+        btnSeeJoined = findViewById(R.id.btnSeeJoined);
 
         ArrayAdapter<CharSequence> adp =
                 ArrayAdapter.createFromResource(this, R.array.minutes_labels,
@@ -90,6 +87,12 @@ public class QrShowActivity extends AppCompatActivity {
         btnStart.setOnClickListener(v -> {
             int mins = getSelectedMinutes();
             startSession(mins);
+        });
+
+        btnSeeJoined.setOnClickListener(v -> {
+            Intent i = new Intent(this, com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.class);
+            i.putExtra(com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.EXTRA_COURSE_ID, courseId);
+            startActivity(i);
         });
 
         btnRefresh.setOnClickListener(v -> loadActive());
@@ -200,16 +203,14 @@ public class QrShowActivity extends AppCompatActivity {
         if (tvStatus != null) { tvStatus.setText(""); tvStatus.setVisibility(View.GONE); }
         if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
         if (boxStart != null)   boxStart.setVisibility(View.GONE);
+        if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.VISIBLE);
 
         tvInfo.setText("Yoklama aktif");
         tvSecret.setText("Kod: " + dto.getSecret());
 
         String payload = "ATT|" + courseId + "|" + dto.getSecret();
         Bitmap bmp = makeQr(payload, 900);
-        if (bmp != null) {
-            imgQr.setImageBitmap(bmp);
-            imgQr.setAlpha(1f);
-        }
+        if (bmp != null) imgQr.setImageBitmap(bmp);
 
         try { expiresAt = java.time.Instant.parse(dto.getExpiresAt()); }
         catch (Exception e) { expiresAt = null; }
@@ -310,16 +311,15 @@ public class QrShowActivity extends AppCompatActivity {
         stopTicker();
         if (imgQr != null) imgQr.setVisibility(View.GONE);
         if (btnStop != null) btnStop.setEnabled(false);
-
         if (tvStatus != null) {
             tvStatus.setText("Bu ders için aktif yoklama oturumu yok.");
             tvStatus.setVisibility(View.VISIBLE);
         }
         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
-
         if (boxStart != null)   boxStart.setVisibility(View.VISIBLE);
         tvSecret.setText("Kod:");
         tvExpire.setText("Kalan süre: -");
+        if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.GONE);
     }
 
     private void showError(String msg) {

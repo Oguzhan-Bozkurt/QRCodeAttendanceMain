@@ -37,4 +37,12 @@ public interface AttendanceApi {
 
     @GET("courses/{courseId}/attendance/active/records")
     Call<List<AttendanceRecordDto>> records(@Path("courseId") long courseId);
+
+    @POST("courses/{courseId}/attendance/checkin")
+    Call<ResponseBody> checkin(@Path("courseId") long courseId, @Body MarkRequest body);
+
+    @GET("courses/{courseId}/attendance/history")
+    Call<java.util.List<com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto>>
+    history(@Path("courseId") long courseId);
+
 }

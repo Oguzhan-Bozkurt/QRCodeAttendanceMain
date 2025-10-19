@@ -26,6 +26,14 @@
             android:textSize="16sp"
             android:layout_marginTop="8dp"/>
 
+        <Button
+            android:id="@+id/btnSeeJoined"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Katılanları Gör"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"/>
+
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="wrap_content"
