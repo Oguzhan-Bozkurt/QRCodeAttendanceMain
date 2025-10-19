@@ -32,6 +32,7 @@
         <activity android:name=".ui.attendance.QrShowActivity" android:exported="false" />
         <activity android:name=".ui.attendance.QrScanActivity" android:exported="false" />
         <activity android:name=".ui.attendance.AttendanceRecordsActivity" android:label="Katılanlar" />
+        <activity android:name=".ui.attendance.AttendanceHistoryActivity" android:label="Yoklama Geçmişi" />
 
         <activity
             android:name=".ui.login.LoginActivity"

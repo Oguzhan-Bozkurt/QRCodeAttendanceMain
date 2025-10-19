@@ -79,7 +79,6 @@
             android:text="Yoklamayı Bitir"
             android:layout_marginTop="16dp"/>
 
-        <!-- Süre seç + Başlat kutusu (aktif oturum YOKKEN görünecek) -->
         <LinearLayout
             android:id="@+id/boxStart"
             android:layout_width="match_parent"
