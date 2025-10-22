@@ -48,7 +48,7 @@ public class QrShowActivity extends AppCompatActivity {
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable ticker, pollTask;
     private Instant expiresAt;
-    private Button btnStop, btnRefresh, btnStart, btnSeeJoined;
+    private Button btnStop, btnRefresh, btnStart, btnSeeJoined, btnHistory;
     private Spinner spMinutes;
     private LinearLayout boxStart;
 
@@ -77,6 +77,7 @@ public class QrShowActivity extends AppCompatActivity {
         boxStart  = findViewById(R.id.boxStart);
         btnStart  = findViewById(R.id.btnStart);
         btnSeeJoined = findViewById(R.id.btnSeeJoined);
+        btnHistory = findViewById(R.id.btnHistory);
 
         ArrayAdapter<CharSequence> adp =
                 ArrayAdapter.createFromResource(this, R.array.minutes_labels,
@@ -93,6 +94,18 @@ public class QrShowActivity extends AppCompatActivity {
             Intent i = new Intent(this, com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.class);
             i.putExtra(com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.EXTRA_COURSE_ID, courseId);
             startActivity(i);
+        });
+
+        btnHistory.setOnClickListener(v -> {
+            startActivity(
+                    new android.content.Intent(
+                            QrShowActivity.this,
+                            com.example.qrkodlayoklama.ui.attendance.AttendanceHistoryActivity.class
+                    ).putExtra(
+                            com.example.qrkodlayoklama.ui.attendance.AttendanceHistoryActivity.EXTRA_COURSE_ID,
+                            courseId
+                    )
+            );
         });
 
         btnRefresh.setOnClickListener(v -> loadActive());

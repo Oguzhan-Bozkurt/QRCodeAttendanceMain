@@ -6,6 +6,7 @@ import com.example.qrkodlayoklama.data.remote.model.AttendanceStartRequest;
 import com.example.qrkodlayoklama.data.remote.model.MarkRequest;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceCheckRequest;
 import com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto;
+import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 
 public interface AttendanceApi {
+
     @GET("courses/{courseId}/attendance/active")
     Call<AttendanceSessionDto> active(@Path("courseId") Long courseId);
 
@@ -30,7 +32,7 @@ public interface AttendanceApi {
     Call<Void> check(@Body AttendanceCheckRequest req);
 
     @POST("courses/{courseId}/attendance/stop")
-    Call<okhttp3.ResponseBody> stop(@Path("courseId") long courseId);
+    Call<ResponseBody> stop(@Path("courseId") long courseId);
 
     @GET("courses/{courseId}/attendance/active/summary")
     Call<ActiveSummaryDto> activeSummary(@Path("courseId") long courseId);
@@ -42,7 +44,11 @@ public interface AttendanceApi {
     Call<ResponseBody> checkin(@Path("courseId") long courseId, @Body MarkRequest body);
 
     @GET("courses/{courseId}/attendance/history")
-    Call<java.util.List<com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto>>
-    history(@Path("courseId") long courseId);
+    Call<List<SessionHistoryDto>> history(@Path("courseId") long courseId);
 
+    @GET("courses/{courseId}/attendance/{sessionId}")
+    Call<AttendanceSessionDto> sessionDetail(@Path("courseId") long courseId, @Path("sessionId") long sessionId);
+
+    @GET("courses/{courseId}/attendance/{sessionId}/records")
+    Call<List<AttendanceRecordDto>> sessionRecords(@Path("courseId") long courseId, @Path("sessionId") long sessionId);
 }

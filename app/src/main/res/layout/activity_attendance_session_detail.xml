@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Yükleniyor göstergesi -->
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Üst bilgi -->
+        <TextView
+            android:id="@+id/tvInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Oturum detayları"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Secret -->
+        <TextView
+            android:id="@+id/tvSecret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kod: -"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Başlangıç (createdAt) -->
+        <TextView
+            android:id="@+id/tvCreated"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Başlangıç: -"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Bitiş (expiresAt) -->
+        <TextView
+            android:id="@+id/tvExpires"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bitiş: -"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Aktif/Pasif durumu -->
+        <TextView
+            android:id="@+id/tvActive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Durum: -"
+            android:layout_marginBottom="8dp" />
+
+    </LinearLayout>
+</ScrollView>

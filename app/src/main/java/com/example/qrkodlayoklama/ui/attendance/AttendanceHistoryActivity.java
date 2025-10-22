@@ -3,16 +3,19 @@ package com.example.qrkodlayoklama.ui.attendance;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
+
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -21,9 +24,8 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
 
-    private ProgressBar progress;
-    private TextView empty;
     private RecyclerView recycler;
+    private ProgressBar progress;
     private AttendanceHistoryAdapter adapter;
     private long courseId;
 
@@ -39,42 +41,32 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
         }
 
         progress = findViewById(R.id.progress);
-        empty    = findViewById(R.id.empty);
-        recycler = findViewById(R.id.recycler);
-
+        recycler = findViewById(R.id.recyclerHistory);
         recycler.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AttendanceHistoryAdapter();
+
+        adapter = new AttendanceHistoryAdapter(courseId);
         recycler.setAdapter(adapter);
 
-        load();
+        loadAttendanceHistory();
     }
 
-    private void setLoading(boolean b) {
-        progress.setVisibility(b ? View.VISIBLE : View.GONE);
+    private void setLoading(boolean loading) {
+        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
-    private void showListOrEmpty(boolean hasData) {
-        empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
-        recycler.setVisibility(hasData ? View.VISIBLE : View.GONE);
-    }
-
-    private void load() {
+    private void loadAttendanceHistory() {
         setLoading(true);
         ApiClient.attendance().history(courseId).enqueue(new Callback<List<SessionHistoryDto>>() {
             @Override public void onResponse(Call<List<SessionHistoryDto>> call, Response<List<SessionHistoryDto>> resp) {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
-                    List<SessionHistoryDto> data = resp.body();
-                    adapter.setItems(data);
-                    showListOrEmpty(!data.isEmpty());
+                    adapter.setItems(resp.body());
                 } else {
-                    showListOrEmpty(false);
                     Toast.makeText(AttendanceHistoryActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override public void onFailure(Call<List<SessionHistoryDto>> call, Throwable t) {
                 setLoading(false);
-                showListOrEmpty(false);
                 Toast.makeText(AttendanceHistoryActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
