@@ -1,64 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
 
-        <!-- Yükleniyor göstergesi -->
+        <TextView
+            android:id="@+id/tvInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Oturum Detayı"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:id="@+id/tvSecret"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Kod: -" />
+
+        <TextView
+            android:id="@+id/tvCreated"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Başlangıç: -" />
+
+        <TextView
+            android:id="@+id/tvExpires"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bitiş: -" />
+
+        <TextView
+            android:id="@+id/tvActive"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Durum: -" />
+
         <ProgressBar
             android:id="@+id/progress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:visibility="gone"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="12dp"
+            android:visibility="gone" />
 
-        <!-- Üst bilgi -->
         <TextView
-            android:id="@+id/tvInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Oturum detayları"
+            android:text="Katılan Öğrenciler:"
             android:textStyle="bold"
-            android:textSize="18sp"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Secret -->
-        <TextView
-            android:id="@+id/tvSecret"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Kod: -"
+            android:textSize="16sp"
+            android:layout_marginTop="20dp"
             android:layout_marginBottom="8dp" />
 
-        <!-- Başlangıç (createdAt) -->
         <TextView
-            android:id="@+id/tvCreated"
+            android:id="@+id/empty"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Başlangıç: -"
-            android:layout_marginBottom="8dp" />
+            android:text="Bu oturuma katılım bulunamadı."
+            android:gravity="center"
+            android:visibility="gone"
+            android:textColor="#777"
+            android:padding="8dp" />
 
-        <!-- Bitiş (expiresAt) -->
-        <TextView
-            android:id="@+id/tvExpires"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerRecords"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bitiş: -"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Aktif/Pasif durumu -->
-        <TextView
-            android:id="@+id/tvActive"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Durum: -"
-            android:layout_marginBottom="8dp" />
+            android:nestedScrollingEnabled="false" />
 
     </LinearLayout>
 </ScrollView>
