@@ -2,23 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:orientation="vertical">
+
+    <include layout="@layout/toolbar_main"/>
 
     <TextView
         android:id="@+id/tvLine1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="34441666532 - Ad Soyad"
+        android:text="........... - Ad Soyad"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"/>
 
     <TextView
         android:id="@+id/tvLine2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Saat: 2025-10-03 12:34"
+        android:text="Saat: ....-..-.. ..:.."
         android:textSize="13sp"
         android:layout_marginTop="4dp"
-        android:textColor="?attr/colorSecondary" />
+        android:textColor="?attr/colorSecondary"
+        android:layout_marginStart="15dp"
+        android:layout_marginEnd="15dp"/>
 </LinearLayout>

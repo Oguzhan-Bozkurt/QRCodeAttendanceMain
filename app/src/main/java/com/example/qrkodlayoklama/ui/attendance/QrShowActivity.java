@@ -22,6 +22,7 @@ import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceSessionDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceStartRequest;
+import com.example.qrkodlayoklama.ui.BaseActivity;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -36,7 +37,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class QrShowActivity extends AppCompatActivity {
+public class QrShowActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     private boolean polling = false;
@@ -55,7 +56,7 @@ public class QrShowActivity extends AppCompatActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_show);
-
+        setupToolbar("Ekran Başlığı", true);
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
         if (courseId == -1) {
             Toast.makeText(this, "Ders bilgisi bulunamadı", Toast.LENGTH_SHORT).show();
