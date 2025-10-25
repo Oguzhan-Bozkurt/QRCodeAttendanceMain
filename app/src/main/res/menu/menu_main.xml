@@ -4,6 +4,6 @@
     <item
         android:id="@+id/action_logout"
         android:title="Çıkış Yap"
-        android:icon="@drawable/ic_logout"
-        app:showAsAction="always" />
+        android:icon="@drawable/ic_logout_white"
+        app:showAsAction="always"/>
 </menu>

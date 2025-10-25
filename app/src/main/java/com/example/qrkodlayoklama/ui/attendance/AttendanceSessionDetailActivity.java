@@ -15,6 +15,8 @@ import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceRecordDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceSessionDto;
+import com.example.qrkodlayoklama.ui.BaseActivity;
+import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AttendanceSessionDetailActivity extends AppCompatActivity {
+public class AttendanceSessionDetailActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     public static final String EXTRA_SESSION_ID = "sessionId";
@@ -35,6 +37,7 @@ public class AttendanceSessionDetailActivity extends AppCompatActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_session_detail);
+        setupToolbar("", true);
 
         progress = findViewById(R.id.progress);
         tvInfo   = findViewById(R.id.tvInfo);
@@ -75,9 +78,11 @@ public class AttendanceSessionDetailActivity extends AppCompatActivity {
                     var s = resp.body();
                     if (tvInfo   != null) tvInfo.setText("Oturum #" + s.getId());
                     if (tvSecret != null) tvSecret.setText("Kod: " + s.getSecret());
-                    if (tvCreated!= null) tvCreated.setText("Başlangıç: " + (s.getCreatedAt() != null ? s.getCreatedAt() : "-"));
-                    if (tvExpires!= null) tvExpires.setText("Bitiş: " + (s.getExpiresAt() != null ? s.getExpiresAt() : "-"));
-                    if (tvActive != null) tvActive.setText(Boolean.TRUE.equals(s.isActive()) ? "Aktif" : "Pasif");
+                    if (tvCreated != null)
+                        tvCreated.setText("Başlangıç: " + DateFormat.any(s.getCreatedAt()));
+                    if (tvExpires != null)
+                        tvExpires.setText("Bitiş: " + DateFormat.any(s.getExpiresAt()));
+                    if (tvActive != null) tvActive.setText("Durum: " + (Boolean.TRUE.equals(s.isActive()) ? "Aktif" : "Pasif"));
                 } else {
                     Toast.makeText(AttendanceSessionDetailActivity.this,
                             "Bulunamadı: " + resp.code(), Toast.LENGTH_LONG).show();
@@ -124,5 +129,4 @@ public class AttendanceSessionDetailActivity extends AppCompatActivity {
                     }
                 });
     }
-
 }

@@ -15,11 +15,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceRecordDto;
+import com.example.qrkodlayoklama.ui.BaseActivity;
 
 import java.util.List;
 
 
-public class AttendanceRecordsActivity extends AppCompatActivity {
+public class AttendanceRecordsActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     private ProgressBar progress;
@@ -31,6 +32,7 @@ public class AttendanceRecordsActivity extends AppCompatActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_records);
+        setupToolbar("", true);
 
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
         if (courseId == -1) {
@@ -71,7 +73,7 @@ public class AttendanceRecordsActivity extends AppCompatActivity {
                         setLoading(false);
                         if (resp.isSuccessful() && resp.body() != null) {
                             List<AttendanceRecordDto> data = resp.body();
-                            adapter.setItems(data);         // adapter.setItems(List<AttendanceRecordDto>) olmalı
+                            adapter.setItems(data);
                             showListOrEmpty(!data.isEmpty());
                         } else {
                             showListOrEmpty(false);

@@ -15,10 +15,11 @@ import com.example.qrkodlayoklama.data.local.SessionManager;
 import com.example.qrkodlayoklama.ui.login.LoginActivity;
 
 
-public class StudentHomeActivity extends AppCompatActivity {
+public class StudentHomeActivity extends BaseActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_home);
+        setupToolbar("Öğrenci", false);
 
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> doLogout());
@@ -29,11 +30,6 @@ public class StudentHomeActivity extends AppCompatActivity {
                     com.example.qrkodlayoklama.ui.attendance.QrScanActivity.class);
             startActivity(i);
         });
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_home, menu);
-        return true;
     }
 
     @Override

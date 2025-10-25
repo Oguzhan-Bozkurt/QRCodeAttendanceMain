@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
+import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHistoryAdapter.ViewHolder> {
 
     private final long courseId;
+
     private List<SessionHistoryDto> items = new ArrayList<>();
 
     public AttendanceHistoryAdapter(long courseId) {
@@ -34,16 +36,14 @@ public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHis
     public void onBindViewHolder(ViewHolder h, int position) {
         SessionHistoryDto s = items.get(position);
 
-        // Başlık: "Oturum #ID • X kişi"  (count varsa)
         String title = "Oturum #" + s.getId();
         if (s.getCount() != 0) title += " • " + s.getCount() + " kişi";
         h.tvTitle.setText(title);
 
-        // Alt satır: "Başlangıç: ... | Bitiş: ... | Durum: Aktif/Pasif"
-        String created = s.getCreatedAt() != null ? s.getCreatedAt() : "-";
-        String expires = s.getExpiresAt() != null ? s.getExpiresAt() : "-";
+        String created = DateFormat.any(s.getCreatedAt() != null ? s.getCreatedAt() : "-");
+        String expires = DateFormat.any(s.getExpiresAt() != null ? s.getExpiresAt() : "-");
         String status  = Boolean.TRUE.equals(s.isActive()) ? "Aktif" : "Pasif";
-        h.tvSubtitle.setText("Başlangıç: " + created + " | Bitiş: " + expires + " | " + status);
+        h.tvSubtitle.setText("Başlangıç: " + created + " \nBitiş: " + expires + " \nDurum: " + status);
 
         h.itemView.setOnClickListener(v -> {
             Intent i = new Intent(v.getContext(), AttendanceSessionDetailActivity.class);
@@ -64,9 +64,9 @@ public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHis
         TextView tvTitle, tvSubtitle;
         ViewHolder(View itemView) {
             super(itemView);
-            // item_attendance_history.xml içinde bu id’lerin olduğundan emin ol
             tvTitle    = itemView.findViewById(R.id.tvTitle);
             tvSubtitle = itemView.findViewById(R.id.tvSubtitle);
         }
     }
+
 }

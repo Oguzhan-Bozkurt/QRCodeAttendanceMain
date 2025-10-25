@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
+
+        <include layout="@layout/toolbar_main"/>
 
         <TextView
             android:id="@+id/tvInfo"
@@ -16,31 +17,41 @@
             android:text="Oturum Detayı"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="12dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvSecret"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Kod: -" />
+            android:text="Kod: -"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvCreated"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Başlangıç: -" />
+            android:text="Başlangıç: -"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvExpires"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Bitiş: -" />
+            android:text="Bitiş: -"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvActive"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Durum: -" />
+            android:text="Durum: -"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <ProgressBar
             android:id="@+id/progress"
@@ -48,7 +59,9 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="12dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -57,7 +70,9 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_marginTop="20dp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/empty"
@@ -67,13 +82,17 @@
             android:gravity="center"
             android:visibility="gone"
             android:textColor="#777"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerRecords"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false" />
+            android:nestedScrollingEnabled="false"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
     </LinearLayout>
 </ScrollView>

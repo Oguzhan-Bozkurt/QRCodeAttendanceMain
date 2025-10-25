@@ -6,8 +6,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
+        <include layout="@layout/toolbar_main"/>
 
         <TextView
             android:id="@+id/tvTitle"
@@ -16,7 +16,8 @@
             android:text="Yoklama Oturumu"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvJoined"
@@ -24,7 +25,9 @@
             android:layout_height="wrap_content"
             android:text="Katılan: -"
             android:textSize="16sp"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <Button
             android:id="@+id/btnSeeJoined"
@@ -32,7 +35,9 @@
             android:layout_height="wrap_content"
             android:text="Katılanları Gör"
             android:layout_marginTop="8dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <ProgressBar
             android:id="@+id/progress"
@@ -40,14 +45,18 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:visibility="gone"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvInfo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Oturum başlatılıyor…"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <TextView
             android:id="@+id/tvSecret"
@@ -56,7 +65,9 @@
             android:text="Kod:"
             android:textStyle="bold"
             android:textSize="16sp"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <ImageView
             android:id="@+id/imgQr"
@@ -70,21 +81,27 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Kalan süre: -"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <Button
             android:id="@+id/btnStop"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Yoklamayı Bitir"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <Button
             android:id="@+id/btnHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Geçmişi Gör"
-            android:layout_marginTop="8dp"/>
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <LinearLayout
             android:id="@+id/boxStart"
@@ -100,14 +117,17 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:entries="@array/minutes_labels" />
+                android:entries="@array/minutes_labels"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"/>
 
             <Button
                 android:id="@+id/btnStart"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Başlat"
-                android:layout_marginStart="12dp"/>
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"/>
         </LinearLayout>
 
         <TextView
@@ -116,7 +136,9 @@
             android:layout_height="wrap_content"
             android:text=""
             android:visibility="gone"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
         <Button
             android:id="@+id/btnRefresh"
@@ -124,7 +146,9 @@
             android:layout_height="wrap_content"
             android:text="Yenile"
             android:layout_marginTop="8dp"
-            android:visibility="gone"/>
+            android:visibility="gone"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"/>
 
     </LinearLayout>
 </ScrollView>

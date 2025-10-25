@@ -40,12 +40,14 @@ import retrofit2.Response;
 public class QrShowActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
+    public static final String EXTRA_COURSE_NAME = "courseName";
+    private Long courseId;
+    private String courseName;
     private boolean polling = false;
     private Call<AttendanceSessionDto> inflight;
     private ProgressBar progress;
     private TextView tvTitle, tvInfo, tvSecret, tvExpire, tvStatus, tvJoined;
     private ImageView imgQr;
-    private Long courseId;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable ticker, pollTask;
     private Instant expiresAt;
@@ -56,8 +58,10 @@ public class QrShowActivity extends BaseActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_qr_show);
-        setupToolbar("Ekran Başlığı", true);
+        setupToolbar("Yoklama", true);
+
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
+        courseName = getIntent().getStringExtra(EXTRA_COURSE_NAME);
         if (courseId == -1) {
             Toast.makeText(this, "Ders bilgisi bulunamadı", Toast.LENGTH_SHORT).show();
             finish();
@@ -92,20 +96,16 @@ public class QrShowActivity extends BaseActivity {
         });
 
         btnSeeJoined.setOnClickListener(v -> {
-            Intent i = new Intent(this, com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.class);
-            i.putExtra(com.example.qrkodlayoklama.ui.attendance.AttendanceRecordsActivity.EXTRA_COURSE_ID, courseId);
+            Intent i = new Intent(this, AttendanceRecordsActivity.class);
+            i.putExtra(AttendanceRecordsActivity.EXTRA_COURSE_ID, courseId);
             startActivity(i);
         });
 
         btnHistory.setOnClickListener(v -> {
             startActivity(
                     new android.content.Intent(
-                            QrShowActivity.this,
-                            com.example.qrkodlayoklama.ui.attendance.AttendanceHistoryActivity.class
-                    ).putExtra(
-                            com.example.qrkodlayoklama.ui.attendance.AttendanceHistoryActivity.EXTRA_COURSE_ID,
-                            courseId
-                    )
+                            QrShowActivity.this, AttendanceHistoryActivity.class).putExtra(
+                            AttendanceHistoryActivity.EXTRA_COURSE_ID, courseId)
             );
         });
 
@@ -141,7 +141,7 @@ public class QrShowActivity extends BaseActivity {
             });
         });
 
-        tvTitle.setText("Yoklama - Ders ID: " + courseId);
+        tvTitle.setText(courseName);
         loadOrStart();
     }
 

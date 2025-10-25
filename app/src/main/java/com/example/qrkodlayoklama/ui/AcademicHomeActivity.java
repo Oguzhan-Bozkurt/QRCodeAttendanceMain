@@ -16,10 +16,11 @@ import com.example.qrkodlayoklama.ui.course.CourseListActivity;
 import com.example.qrkodlayoklama.ui.login.LoginActivity;
 
 
-public class AcademicHomeActivity extends AppCompatActivity {
+public class AcademicHomeActivity extends BaseActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_academic_home);
+        setupToolbar("Akademisyen", false);
 
         Button btnLogout = findViewById(R.id.btnLogout);
         btnLogout.setOnClickListener(v -> doLogout());
@@ -34,11 +35,6 @@ public class AcademicHomeActivity extends AppCompatActivity {
             startActivity(new Intent(this, CourseListActivity.class));
         });
 
-    }
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_home, menu);
-        return true;
     }
 
     @Override

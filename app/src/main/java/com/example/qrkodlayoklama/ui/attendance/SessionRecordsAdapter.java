@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceRecordDto;
+import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +26,8 @@ public class SessionRecordsAdapter extends RecyclerView.Adapter<SessionRecordsAd
 
     @Override public void onBindViewHolder(@NonNull VH h, int position) {
         AttendanceRecordDto r = items.get(position);
-        h.tvName.setText(r.getName());
-        h.tvTime.setText(String.valueOf(r.getCheckedAt()));
+        h.tvStudentInfo.setText(r.getName() + " " + r.getSurname() + " - " + r.getUserName());
+        h.tvTime.setText(DateFormat.any(String.valueOf(r.getCheckedAt())));
     }
 
     @Override public int getItemCount() { return items.size(); }
@@ -37,10 +38,10 @@ public class SessionRecordsAdapter extends RecyclerView.Adapter<SessionRecordsAd
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        TextView tvName, tvTime;
+        TextView tvStudentInfo, tvTime;
         VH(View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvName);
+            tvStudentInfo = itemView.findViewById(R.id.tvStudentInfo);
             tvTime = itemView.findViewById(R.id.tvTime);
         }
     }

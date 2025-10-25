@@ -25,6 +25,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             setSupportActionBar(toolbar);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setTitle(title);
+                toolbar.setTitleMarginTop(dp(15));
                 getSupportActionBar().setDisplayHomeAsUpEnabled(showBack);
             }
         }
@@ -51,5 +52,10 @@ public abstract class BaseActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private int dp(int v) {
+        float d = getResources().getDisplayMetrics().density;
+        return Math.round(v * d);
     }
 }

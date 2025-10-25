@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.CourseDto;
+import com.example.qrkodlayoklama.ui.BaseActivity;
+import com.example.qrkodlayoklama.ui.attendance.QrShowActivity;
 
 import java.util.List;
 
@@ -22,7 +24,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CourseListActivity extends AppCompatActivity {
+public class CourseListActivity extends BaseActivity {
 
     private ProgressBar progress;
     private TextView empty;
@@ -32,6 +34,7 @@ public class CourseListActivity extends AppCompatActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_course_list);
+        setupToolbar("Dersler", true);
 
         progress = findViewById(R.id.progress);
         empty    = findViewById(R.id.empty);
@@ -42,9 +45,9 @@ public class CourseListActivity extends AppCompatActivity {
         recycler.setAdapter(adapter);
 
         adapter.setOnItemClickListener(item -> {
-            Intent i = new Intent(CourseListActivity.this,
-                    com.example.qrkodlayoklama.ui.attendance.QrShowActivity.class);
-            i.putExtra(com.example.qrkodlayoklama.ui.attendance.QrShowActivity.EXTRA_COURSE_ID, item.getId());
+            Intent i = new Intent(CourseListActivity.this, QrShowActivity.class);
+            i.putExtra(QrShowActivity.EXTRA_COURSE_ID, item.getId());
+            i.putExtra(QrShowActivity.EXTRA_COURSE_NAME, item.getCourseName());
             startActivity(i);
         });
 

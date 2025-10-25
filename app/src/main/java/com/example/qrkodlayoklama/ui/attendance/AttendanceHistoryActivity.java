@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
+import com.example.qrkodlayoklama.ui.BaseActivity;
 
 import java.util.List;
 
@@ -20,7 +21,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AttendanceHistoryActivity extends AppCompatActivity {
+public class AttendanceHistoryActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
 
@@ -32,6 +33,7 @@ public class AttendanceHistoryActivity extends AppCompatActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_history);
+        setupToolbar("", true);
 
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
         if (courseId == -1) {
