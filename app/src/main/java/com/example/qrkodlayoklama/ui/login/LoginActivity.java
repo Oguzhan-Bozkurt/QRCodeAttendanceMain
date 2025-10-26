@@ -15,6 +15,7 @@ import com.example.qrkodlayoklama.data.remote.model.LoginResponse;
 import com.example.qrkodlayoklama.data.remote.model.UserDto;
 import com.example.qrkodlayoklama.ui.StudentHomeActivity;
 import com.example.qrkodlayoklama.ui.AcademicHomeActivity;
+import com.example.qrkodlayoklama.ui.auth.RegisterActivity;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -23,7 +24,7 @@ import retrofit2.Response;
 public class LoginActivity extends AppCompatActivity {
 
     private EditText etUserName, etPassword;
-    private Button btnLogin;
+    private Button btnLogin, btnRegister;
     private ProgressBar progress;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -32,10 +33,14 @@ public class LoginActivity extends AppCompatActivity {
 
         etUserName = findViewById(R.id.etUserName);
         etPassword = findViewById(R.id.etPassword);
-        btnLogin   = findViewById(R.id.btnLogin);
-        progress   = findViewById(R.id.progress);
-
+        btnLogin = findViewById(R.id.btnLogin);
+        btnRegister = findViewById(R.id.btnRegister);
+        progress = findViewById(R.id.progress);
         btnLogin.setOnClickListener(v -> doLogin());
+
+        btnRegister.setOnClickListener(v ->
+                startActivity(new Intent(this, RegisterActivity.class))
+        );
 
         if (SessionManager.isLoggedIn()) {
             setLoading(true);

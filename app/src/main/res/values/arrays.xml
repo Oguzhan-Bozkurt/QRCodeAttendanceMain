@@ -13,4 +13,16 @@
         <item>15</item>
         <item>30</item>
     </string-array>
+
+    <string-array name="roles">
+        <item>Öğrenci</item>
+        <item>Akademisyen</item>
+    </string-array>
+
+    <string-array name="titles">
+        <item>Araştırma Görevlisi</item>
+        <item>Dr. Öğr. Üyesi</item>
+        <item>Doç. Dr.</item>
+        <item>Prof. Dr.</item>
+    </string-array>
 </resources>
