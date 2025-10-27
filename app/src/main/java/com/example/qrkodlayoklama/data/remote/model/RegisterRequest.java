@@ -1,25 +1,25 @@
 package com.example.qrkodlayoklama.data.remote.model;
 
 public class RegisterRequest {
-    private String username;
+    private Long userName;
     private String password;
     private String name;
-    private String surname;
-    private boolean role;
+    private String surName;
+    private boolean userIsStudent;
     private String title;
 
-    public RegisterRequest(String username, String password, String name, String surname, boolean role, String title) {
-        this.username = username;
+    public RegisterRequest(Long userName, String password, String name, String surName, boolean userIsStudent, String title) {
+        this.userName = userName;
         this.password = password;
         this.name = name;
-        this.surname = surname;
-        this.role = role;
+        this.surName = surName;
+        this.userIsStudent = userIsStudent;
         this.title = title;
     }
 
-    public String getUsername() { return username; }
+    public Long getUserName() { return userName; }
     public String getPassword() { return password; }
-    public String getFullName() { return (name + " " + surname); }
-    public boolean getRole() { return role; }
+    public String getFullName() { return (name + " " + surName); }
+    public boolean getRole() { return userIsStudent; }
     public String getTitle() {return title; }
 }
