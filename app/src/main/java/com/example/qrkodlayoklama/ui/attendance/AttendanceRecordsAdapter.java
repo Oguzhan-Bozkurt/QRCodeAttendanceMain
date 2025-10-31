@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceRecordDto;
+import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +51,7 @@ public class AttendanceRecordsAdapter extends RecyclerView.Adapter<AttendanceRec
         String checked  = safe(r.getCheckedAt());
 
         h.tvLine1.setText(userNo + " - " + name + " " + surname);
-        h.tvLine2.setText("Saat: " + fmtIsoToMinute(checked));
+        h.tvLine2.setText("Saat: " + DateFormat.any(checked));
 
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(r);
@@ -72,17 +73,4 @@ public class AttendanceRecordsAdapter extends RecyclerView.Adapter<AttendanceRec
     }
 
     private static String safe(String s) { return s == null ? "" : s; }
-
-    // "2025-10-03T12:34:56.123Z" -> "2025-10-03 12:34"
-    private static String fmtIsoToMinute(String iso) {
-        if (iso == null) return "";
-        try {
-            String s = iso.replace('T', ' ');
-            if (s.endsWith("Z")) s = s.substring(0, s.length() - 1);
-            if (s.length() >= 16) return s.substring(0, 16);
-            return s;
-        } catch (Exception ignore) {
-            return iso;
-        }
-    }
 }

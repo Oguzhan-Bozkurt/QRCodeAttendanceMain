@@ -51,4 +51,9 @@ public interface AttendanceApi {
 
     @GET("courses/{courseId}/attendance/{sessionId}/records")
     Call<List<AttendanceRecordDto>> sessionRecords(@Path("courseId") long courseId, @Path("sessionId") long sessionId);
+
+    @GET("attendance/my")
+    Call<java.util.List<com.example.qrkodlayoklama.data.remote.model.MyAttendanceDto>> myAttendance();
+
+
 }

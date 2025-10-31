@@ -17,11 +17,12 @@
     <EditText
         android:id="@+id/etUserName"
         android:hint="Kullanıcı No"
-        android:inputType="number"
         android:layout_marginTop="16dp"
-        android:maxLines="1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:digits="0123456789"
+        android:maxLength="11"/>
 
     <EditText
         android:id="@+id/etPassword"

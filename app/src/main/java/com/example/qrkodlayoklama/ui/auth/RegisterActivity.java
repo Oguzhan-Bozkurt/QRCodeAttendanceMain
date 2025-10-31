@@ -1,10 +1,11 @@
 package com.example.qrkodlayoklama.ui.auth;
 
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.view.View;
 import android.widget.*;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.RegisterRequest;
@@ -25,6 +26,7 @@ public class RegisterActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         setupToolbar("Kayıt Ol", true);
+
 
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);

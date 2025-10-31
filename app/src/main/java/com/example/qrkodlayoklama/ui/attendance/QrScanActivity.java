@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.MarkRequest;
+import com.example.qrkodlayoklama.ui.BaseActivity;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 
@@ -22,7 +23,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class QrScanActivity extends AppCompatActivity {
+public class QrScanActivity extends BaseActivity {
+
+    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            startScan();
+        } else {
+            cameraPermLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
 
     private final ActivityResultLauncher<Intent> scanLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -77,16 +88,6 @@ public class QrScanActivity extends AppCompatActivity {
                     finish();
                 }
             });
-
-    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            startScan();
-        } else {
-            cameraPermLauncher.launch(Manifest.permission.CAMERA);
-        }
-    }
 
     private void startScan() {
         IntentIntegrator integrator = new IntentIntegrator(this);

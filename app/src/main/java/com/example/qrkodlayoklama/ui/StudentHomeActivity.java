@@ -2,13 +2,10 @@ package com.example.qrkodlayoklama.ui;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
-import android.view.Menu;
 import android.view.MenuItem;
 import androidx.appcompat.app.AlertDialog;
 import android.widget.Button;
-import android.content.Intent;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.local.SessionManager;
@@ -28,6 +25,13 @@ public class StudentHomeActivity extends BaseActivity {
         btnScanQr.setOnClickListener(v -> {
             Intent i = new Intent(StudentHomeActivity.this,
                     com.example.qrkodlayoklama.ui.attendance.QrScanActivity.class);
+            startActivity(i);
+        });
+
+        Button btnMyAttendance = findViewById(R.id.btnMyAttendance);
+        btnMyAttendance.setOnClickListener(v -> {
+            Intent i = new Intent(StudentHomeActivity.this,
+                    com.example.qrkodlayoklama.ui.attendance.MyAttendanceActivity.class);
             startActivity(i);
         });
     }

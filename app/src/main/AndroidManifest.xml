@@ -31,7 +31,8 @@
         <activity android:name=".ui.attendance.QrScanActivity" android:exported="false"/>
         <activity android:name=".ui.attendance.AttendanceRecordsActivity" android:exported="false"/>
         <activity android:name=".ui.attendance.AttendanceHistoryActivity" android:exported="false"/>
-        <activity android:name=".ui.attendance.AttendanceSessionDetailActivity" android:exported="false" />
+        <activity android:name=".ui.attendance.AttendanceSessionDetailActivity" android:exported="false"/>
+        <activity android:name=".ui.attendance.MyAttendanceActivity" android:exported="false"/>
         <activity android:name=".ui.login.LoginActivity" android:exported="true" android:theme="@style/Theme.QrKodlaYoklama">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
