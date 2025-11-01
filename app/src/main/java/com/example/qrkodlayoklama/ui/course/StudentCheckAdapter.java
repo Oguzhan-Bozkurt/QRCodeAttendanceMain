@@ -13,6 +13,7 @@ import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.model.UserDto;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,13 +62,14 @@ public class StudentCheckAdapter extends RecyclerView.Adapter<StudentCheckAdapte
 
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
+        items.sort(Comparator.comparingLong(UserDto::getUserName));
         UserDto u = items.get(position);
         long id = u.getId() != null ? u.getId() : -1L;
-
         String fullName = (u.getName() != null ? u.getName() : "")
                 + " " + (u.getSurname() != null ? u.getSurname() : "");
-        h.tvName.setText(fullName.trim().isEmpty() ? ("Öğrenci #" + id) : fullName.trim());
+        long userName = u.getUserName() != null ? u.getUserName() : -1L;
 
+        h.tvName.setText(fullName.trim() + " - " + userName);
         h.cb.setOnCheckedChangeListener(null);
         h.cb.setChecked(selectedIds.contains(id));
 

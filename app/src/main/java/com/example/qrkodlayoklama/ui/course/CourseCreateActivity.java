@@ -71,8 +71,9 @@ public class CourseCreateActivity extends BaseActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
 
-                        long[] idsArr   = result.getData().getLongArrayExtra(StudentPickerActivity.RESULT_SELECTED_IDS);
-                        String[] names  = result.getData().getStringArrayExtra(StudentPickerActivity.RESULT_SELECTED_NAMES);
+                        long[] idsArr = result.getData().getLongArrayExtra(StudentPickerActivity.RESULT_SELECTED_IDS);
+                        String[] names = result.getData().getStringArrayExtra(StudentPickerActivity.RESULT_SELECTED_NAMES);
+                        long[] userNames = result.getData().getLongArrayExtra(StudentPickerActivity.RESULT_SELECTED_USERNAMES);
 
                         selectedStudentIds.clear();
 
@@ -83,7 +84,8 @@ public class CourseCreateActivity extends BaseActivity {
                                 long id = idsArr[i];
                                 selectedStudentIds.add(id);
                                 String nm = (names != null && i < names.length) ? names[i] : ("Öğrenci #" + id);
-                                uiList.add(new SelectedStudentAdapter.StudentUi(id, nm));
+                                long un = userNames[i];
+                                uiList.add(new SelectedStudentAdapter.StudentUi(id, nm, un));
                             }
                         }
                         adapter.setItems(uiList);
@@ -106,21 +108,14 @@ public class CourseCreateActivity extends BaseActivity {
             pickStudentsLauncher.launch(i);
         });
 
-
         btnSave.setOnClickListener(v -> doSave());
     }
 
     private void setLoading(boolean b) {
-        if (progress != null)      progress.setVisibility(b ? View.VISIBLE : View.GONE);
+        if (progress != null) progress.setVisibility(b ? View.VISIBLE : View.GONE);
         if (btnAddStudent != null) btnAddStudent.setEnabled(!b);
-        if (etCourseName != null)  etCourseName.setEnabled(!b);
-        if (etCourseCode != null)  etCourseCode.setEnabled(!b);
-    }
-
-    private long[] toLongArray(java.util.List<Long> list) {
-        long[] arr = new long[list.size()];
-        for (int i = 0; i < list.size(); i++) arr[i] = list.get(i);
-        return arr;
+        if (etCourseName != null) etCourseName.setEnabled(!b);
+        if (etCourseCode != null) etCourseCode.setEnabled(!b);
     }
 
     private void doSave() {

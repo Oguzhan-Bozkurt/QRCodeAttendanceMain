@@ -26,7 +26,7 @@ public class StudentPickerActivity extends BaseActivity {
     public static final String EXTRA_PRESELECTED_IDS = "preselected_ids";
     public static final String RESULT_SELECTED_IDS = "result_selected_ids";
     public static final String RESULT_SELECTED_NAMES = "result_selected_names";
-    public static final String EXTRA_RESULT_IDS = "resultIds";
+    public static final String RESULT_SELECTED_USERNAMES = "result_selected_userNames";
 
     private final ArrayList<Long> selected = new ArrayList<>();
 
@@ -62,25 +62,30 @@ public class StudentPickerActivity extends BaseActivity {
             List<UserDto> sel = adapter.getSelectedUsers();
             long[] ids;
             String[] names;
+            long[] userNames;
 
             if (sel != null && !sel.isEmpty()) {
                 ids = new long[sel.size()];
                 names = new String[sel.size()];
+                userNames = new long[sel.size()];
                 for (int i = 0; i < sel.size(); i++) {
                     UserDto u = sel.get(i);
                     ids[i]   = u.getId();
                     names[i] = (u.getName() != null ? u.getName() : "")
                             + " "
                             + (u.getSurname() != null ? u.getSurname() : "");
+                    userNames[i] = u.getUserName();
                 }
             } else {
                 ids = new long[0];
                 names = new String[0];
+                userNames = new long[0];
             }
 
             Intent data = new Intent();
             data.putExtra(RESULT_SELECTED_IDS, ids);
             data.putExtra(RESULT_SELECTED_NAMES, names);
+            data.putExtra(RESULT_SELECTED_USERNAMES, userNames);
             setResult(RESULT_OK, data);
             finish();
         });

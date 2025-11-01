@@ -15,14 +15,15 @@ public class SelectedStudentAdapter extends RecyclerView.Adapter<SelectedStudent
     public static class StudentUi {
         public long id;
         public String name;
-        public StudentUi(long id, String name) { this.id = id; this.name = name; }
+        public long userName;
+        public StudentUi(long id, String name, long userName) {
+            this.id = id; this.name = name; this.userName = userName;
+        }
     }
 
     private final List<StudentUi> items = new ArrayList<>();
-
     public interface OnRemoveListener { void onRemove(long id); }
     private OnRemoveListener onRemove;
-
     public void setOnRemoveListener(OnRemoveListener l) { this.onRemove = l; }
 
     @NonNull @Override
@@ -36,7 +37,7 @@ public class SelectedStudentAdapter extends RecyclerView.Adapter<SelectedStudent
     public void onBindViewHolder(@NonNull VH h, int position) {
         StudentUi s = items.get(position);
         ((TextView) h.itemView.findViewById(R.id.tvStudent))
-                .setText(s.name + " (id: " + s.id + ")");
+                .setText(s.name + " (No: " + s.userName + ")");
         h.itemView.setOnLongClickListener(v -> {
             items.remove(position);
             notifyDataSetChanged();
