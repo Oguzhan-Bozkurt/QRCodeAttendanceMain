@@ -8,9 +8,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public final class ApiClient {
 
     //private static final String BASE_URL = "http://10.0.2.2:8080/"; localhost
-    private static final String BASE_URL = "http://192.168.214.254:8080/";
+    private static final String BASE_URL = "http://192.168.1.2:8080/";
 
     private static Retrofit retrofit;
+
+    private static UsersApi usersApi;
 
     private ApiClient() {}
 
@@ -45,4 +47,6 @@ public final class ApiClient {
     public static CoursesApi courses() { return get().create(CoursesApi.class); }
 
     public static AttendanceApi attendance() { return get().create(AttendanceApi.class); }
+
+    public static UsersApi users() { return retrofit.create(UsersApi.class); }
 }

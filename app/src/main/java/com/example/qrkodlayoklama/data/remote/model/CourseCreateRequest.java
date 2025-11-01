@@ -1,14 +1,19 @@
 package com.example.qrkodlayoklama.data.remote.model;
 
-public class CourseCreateRequest {
-    private final String courseName;
-    private final String courseCode;
+import java.util.List;
 
-    public CourseCreateRequest(String courseName, String courseCode) {
+public class CourseCreateRequest {
+    private String courseName;
+    private String courseCode;
+    private List<Long> studentIds;
+
+    public CourseCreateRequest(String courseName, String courseCode, List<Long> studentIds) {
         this.courseName = courseName;
         this.courseCode = courseCode;
+        this.studentIds = studentIds;
     }
 
     public String getCourseName() { return courseName; }
     public String getCourseCode() { return courseCode; }
+    public List<Long> getStudentIds() { return studentIds; }
 }

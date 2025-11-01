@@ -2,10 +2,7 @@ package com.example.qrkodlayoklama.ui;
 
 import android.os.Bundle;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
-import android.view.Menu;
 import android.view.MenuItem;
 import androidx.appcompat.app.AlertDialog;
 import android.widget.Button;
