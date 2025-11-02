@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -16,13 +17,13 @@ import android.widget.LinearLayout;
 import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceSessionDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceStartRequest;
 import com.example.qrkodlayoklama.ui.BaseActivity;
+import com.example.qrkodlayoklama.ui.course.CourseListActivity;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -54,6 +55,7 @@ public class QrShowActivity extends BaseActivity {
     private Button btnStop, btnRefresh, btnStart, btnSeeJoined, btnHistory;
     private Spinner spMinutes;
     private LinearLayout boxStart;
+    private EditText etDescription;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,6 +85,7 @@ public class QrShowActivity extends BaseActivity {
         btnStart  = findViewById(R.id.btnStart);
         btnSeeJoined = findViewById(R.id.btnSeeJoined);
         btnHistory = findViewById(R.id.btnHistory);
+        etDescription = findViewById(R.id.etDescription);
 
         ArrayAdapter<CharSequence> adp =
                 ArrayAdapter.createFromResource(this, R.array.minutes_labels,
@@ -102,11 +105,10 @@ public class QrShowActivity extends BaseActivity {
         });
 
         btnHistory.setOnClickListener(v -> {
-            startActivity(
-                    new android.content.Intent(
-                            QrShowActivity.this, AttendanceHistoryActivity.class).putExtra(
-                            AttendanceHistoryActivity.EXTRA_COURSE_ID, courseId)
-            );
+            Intent i = new Intent(QrShowActivity.this, AttendanceHistoryActivity.class);
+            i.putExtra(AttendanceHistoryActivity.EXTRA_COURSE_ID, courseId);
+            i.putExtra(AttendanceHistoryActivity.EXTRA_COURSE_NAME, courseName);
+            startActivity(i);
         });
 
         btnRefresh.setOnClickListener(v -> loadActive());
@@ -192,7 +194,13 @@ public class QrShowActivity extends BaseActivity {
     }
 
     private void startSession(int minutes) {
-        inflight = ApiClient.attendance().start(courseId, new AttendanceStartRequest(minutes));
+        String desc = etDescription != null ? etDescription.getText().toString().trim() : "";
+        if (desc.isEmpty()) {
+            Toast.makeText(this, "Açıklama zorunlu", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        inflight = ApiClient.attendance().start(courseId, new AttendanceStartRequest(minutes, desc));
         inflight.enqueue(new Callback<AttendanceSessionDto>() {
             @Override public void onResponse(Call<AttendanceSessionDto> call, Response<AttendanceSessionDto> resp) {
                 if (resp.isSuccessful() && resp.body() != null) {
@@ -219,7 +227,7 @@ public class QrShowActivity extends BaseActivity {
         if (boxStart != null)   boxStart.setVisibility(View.GONE);
         if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.VISIBLE);
 
-        tvInfo.setText("Yoklama aktif");
+        tvInfo.setText("Yoklama aktif" + (dto.getDescription() != null ? (" • " + dto.getDescription()) : ""));
         tvSecret.setText("Kod: " + dto.getSecret());
 
         String payload = "ATT|" + courseId + "|" + dto.getSecret();
@@ -313,14 +321,6 @@ public class QrShowActivity extends BaseActivity {
         });
     }
 
-    private void showActive(AttendanceSessionDto dto) {
-        if (imgQr != null) imgQr.setVisibility(View.VISIBLE);
-        if (btnStop != null) { btnStop.setEnabled(true); btnStop.setVisibility(View.VISIBLE); }
-        if (tvStatus != null) { tvStatus.setVisibility(View.GONE); tvStatus.setText(""); }
-        if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
-        if (boxStart != null) boxStart.setVisibility(View.GONE);
-    }
-
     private void showNoActive() {
         stopTicker();
         if (imgQr != null) imgQr.setVisibility(View.GONE);
@@ -331,6 +331,7 @@ public class QrShowActivity extends BaseActivity {
         }
         if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
         if (boxStart != null)   boxStart.setVisibility(View.VISIBLE);
+        if (etDescription != null) etDescription.setText("");
         tvSecret.setText("Kod:");
         tvExpire.setText("Kalan süre: -");
         if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.GONE);

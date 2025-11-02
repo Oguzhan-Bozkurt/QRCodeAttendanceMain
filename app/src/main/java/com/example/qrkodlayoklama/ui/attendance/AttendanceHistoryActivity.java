@@ -25,31 +25,36 @@ import retrofit2.Response;
 public class AttendanceHistoryActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
+    public static final String EXTRA_COURSE_NAME = "courseName";
 
     private RecyclerView recycler;
     private ProgressBar progress;
     private AttendanceHistoryAdapter adapter;
     private TextView empty;
     private long courseId;
+    private String courseName;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_history);
-        setupToolbar("", true);
 
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
+        courseName = getIntent().getStringExtra(EXTRA_COURSE_NAME);
         if (courseId == -1) {
             Toast.makeText(this, "Ders bilgisi yok", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
 
+        setupToolbar(courseName, true);
+
+
         progress = findViewById(R.id.progress);
         recycler = findViewById(R.id.recyclerHistory);
         empty = findViewById(R.id.empty);
         recycler.setLayoutManager(new LinearLayoutManager(this));
 
-        adapter = new AttendanceHistoryAdapter(courseId);
+        adapter = new AttendanceHistoryAdapter(courseId, courseName);
         recycler.setAdapter(adapter);
 
         loadAttendanceHistory();

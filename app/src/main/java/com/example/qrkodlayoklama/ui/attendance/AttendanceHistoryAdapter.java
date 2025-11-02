@@ -18,11 +18,13 @@ import java.util.List;
 public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHistoryAdapter.ViewHolder> {
 
     private final long courseId;
+    private final String courseName;
 
     private List<SessionHistoryDto> items = new ArrayList<>();
 
-    public AttendanceHistoryAdapter(long courseId) {
+    public AttendanceHistoryAdapter(long courseId, String courseName) {
         this.courseId = courseId;
+        this.courseName = courseName;
     }
 
     @Override
@@ -36,7 +38,7 @@ public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHis
     public void onBindViewHolder(ViewHolder h, int position) {
         SessionHistoryDto s = items.get(position);
 
-        String title = "Oturum #" + s.getId();
+        String title = s.getDescription();
         if (s.getCount() != 0) title += " • " + s.getCount() + " kişi";
         h.tvTitle.setText(title);
 
@@ -49,6 +51,7 @@ public class AttendanceHistoryAdapter extends RecyclerView.Adapter<AttendanceHis
             Intent i = new Intent(v.getContext(), AttendanceSessionDetailActivity.class);
             i.putExtra(AttendanceSessionDetailActivity.EXTRA_COURSE_ID, courseId);
             i.putExtra(AttendanceSessionDetailActivity.EXTRA_SESSION_ID, s.getId());
+            i.putExtra(AttendanceSessionDetailActivity.EXTRA_COURSE_NAME, courseName);
             v.getContext().startActivity(i);
         });
     }

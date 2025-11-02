@@ -7,6 +7,8 @@ public class AttendanceSessionDto {
     private String expiresAt;
     private boolean active;
     private String createdAt;
+    private String description;
+
 
     public Long getId() { return id; }
     public Long getCourseId() { return courseId; }
@@ -14,4 +16,6 @@ public class AttendanceSessionDto {
     public String getExpiresAt() { return expiresAt; }
     public boolean isActive() { return active; }
     public String getCreatedAt() { return createdAt; }
+    public String getDescription() { return description; }
+    public void setDescription(String d) { this.description = d; }
 }

@@ -15,7 +15,9 @@ import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceRecordDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceSessionDto;
+import com.example.qrkodlayoklama.data.remote.model.CourseDto;
 import com.example.qrkodlayoklama.ui.BaseActivity;
+import com.example.qrkodlayoklama.ui.course.CourseAdapter;
 import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.List;
@@ -28,7 +30,10 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     public static final String EXTRA_SESSION_ID = "sessionId";
+    public static final String EXTRA_COURSE_NAME = "courseName";
+
     private long courseId, sessionId;
+    String courseName;
     private ProgressBar progress;
     private TextView tvInfo, tvSecret, tvCreated, tvExpires, tvActive, empty;
     private RecyclerView recycler;
@@ -37,16 +42,15 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance_session_detail);
-        setupToolbar("", true);
 
         progress = findViewById(R.id.progress);
-        tvInfo   = findViewById(R.id.tvInfo);
+        tvInfo = findViewById(R.id.tvInfo);
         tvSecret = findViewById(R.id.tvSecret);
-        tvCreated= findViewById(R.id.tvCreated);
-        tvExpires= findViewById(R.id.tvExpires);
+        tvCreated = findViewById(R.id.tvCreated);
+        tvExpires = findViewById(R.id.tvExpires);
         tvActive = findViewById(R.id.tvActive);
         recycler = findViewById(R.id.recyclerRecords);
-        empty    = findViewById(R.id.empty);
+        empty = findViewById(R.id.empty);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new SessionRecordsAdapter();
@@ -54,12 +58,16 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
 
         courseId  = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
         sessionId = getIntent().getLongExtra(EXTRA_SESSION_ID, -1);
+        courseName = getIntent().getStringExtra(EXTRA_COURSE_NAME);
+
 
         if (courseId == -1 || sessionId == -1) {
             Toast.makeText(this, "Eksik oturum bilgisi", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
+
+        setupToolbar(courseName, true);
 
         loadDetail();
         loadRecords();
@@ -76,7 +84,7 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
                     var s = resp.body();
-                    if (tvInfo   != null) tvInfo.setText("Oturum #" + s.getId());
+                    if (tvInfo   != null) tvInfo.setText(s.getDescription());
                     if (tvSecret != null) tvSecret.setText("Kod: " + s.getSecret());
                     if (tvCreated != null)
                         tvCreated.setText("Başlangıç: " + DateFormat.any(s.getCreatedAt()));
