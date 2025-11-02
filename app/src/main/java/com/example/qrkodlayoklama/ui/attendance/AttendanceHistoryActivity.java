@@ -3,6 +3,7 @@ package com.example.qrkodlayoklama.ui.attendance;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -28,6 +29,7 @@ public class AttendanceHistoryActivity extends BaseActivity {
     private RecyclerView recycler;
     private ProgressBar progress;
     private AttendanceHistoryAdapter adapter;
+    private TextView empty;
     private long courseId;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,6 +46,7 @@ public class AttendanceHistoryActivity extends BaseActivity {
 
         progress = findViewById(R.id.progress);
         recycler = findViewById(R.id.recyclerHistory);
+        empty = findViewById(R.id.empty);
         recycler.setLayoutManager(new LinearLayoutManager(this));
 
         adapter = new AttendanceHistoryAdapter(courseId);
@@ -62,7 +65,8 @@ public class AttendanceHistoryActivity extends BaseActivity {
             @Override public void onResponse(Call<List<SessionHistoryDto>> call, Response<List<SessionHistoryDto>> resp) {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
-                    adapter.setItems(resp.body());
+                    if (!resp.body().isEmpty()) adapter.setItems(resp.body());
+                    else empty.setVisibility(View.VISIBLE);
                 } else {
                     Toast.makeText(AttendanceHistoryActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
                 }

@@ -8,7 +8,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,6 +20,7 @@ import com.example.qrkodlayoklama.ui.attendance.QrShowActivity;
 
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -49,6 +50,16 @@ public class CourseListActivity extends BaseActivity {
             i.putExtra(QrShowActivity.EXTRA_COURSE_ID, item.getId());
             i.putExtra(QrShowActivity.EXTRA_COURSE_NAME, item.getCourseName());
             startActivity(i);
+        });
+
+        adapter.setOnDeleteClickListener(course -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Dersi Sil")
+                    .setMessage(course.getCourseName()
+                            + " dersini ve yoklama kayıtlarını silmek istediğinize emin misiniz?")
+                    .setPositiveButton("Evet", (d, w) -> deleteCourse(course))
+                    .setNegativeButton("İptal", null)
+                    .show();
         });
 
         load();
@@ -82,6 +93,22 @@ public class CourseListActivity extends BaseActivity {
             @Override public void onFailure(Call<List<CourseDto>> call, Throwable t) {
                 setLoading(false);
                 showListOrEmpty(false);
+                Toast.makeText(CourseListActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void deleteCourse(CourseDto course) {
+        ApiClient.courses().delete(course.getId()).enqueue(new Callback<ResponseBody>() {
+            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
+                if (resp.isSuccessful()) {
+                    Toast.makeText(CourseListActivity.this, "Ders silindi", Toast.LENGTH_SHORT).show();
+                    load();
+                } else {
+                    Toast.makeText(CourseListActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(CourseListActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });

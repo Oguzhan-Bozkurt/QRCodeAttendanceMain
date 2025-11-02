@@ -4,6 +4,7 @@ import com.example.qrkodlayoklama.data.remote.model.CourseCreateRequest;
 import com.example.qrkodlayoklama.data.remote.model.CourseDto;
 import com.example.qrkodlayoklama.data.remote.model.UserDto;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
@@ -28,4 +29,7 @@ public interface CoursesApi {
 
     @DELETE("courses/{courseId}/students/{userName}")
     Call<Void> removeStudent(@Path("courseId") long courseId, @Path("userName") long userName);
+
+    @DELETE("courses/{id}")
+    Call<ResponseBody> delete(@Path("id") long id);
 }

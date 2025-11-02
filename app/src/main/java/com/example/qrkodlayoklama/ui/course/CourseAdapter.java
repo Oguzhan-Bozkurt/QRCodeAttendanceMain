@@ -3,6 +3,7 @@ package com.example.qrkodlayoklama.ui.course;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,17 +22,25 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
     public interface OnItemClickListener {
         void onCourseClick(CourseDto course);
     }
-
-    private OnItemClickListener listener;
-
-    public void setOnItemClickListener(OnItemClickListener l) {
-        this.listener = l;
+    public interface OnDeleteClickListener {
+        void onDeleteClick(CourseDto course);
     }
+
+    private OnItemClickListener itemClickListener;
+    private OnDeleteClickListener deleteClickListener;
 
     public void setItems(List<CourseDto> data) {
         items.clear();
         if (data != null) items.addAll(data);
         notifyDataSetChanged();
+    }
+
+    public void setOnItemClickListener(OnItemClickListener l) {
+        this.itemClickListener = l;
+    }
+
+    public void setOnDeleteClickListener(OnDeleteClickListener l) {
+        this.deleteClickListener = l;
     }
 
     @NonNull @Override
@@ -48,7 +57,11 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
         h.tvCode.setText(c.getCourseCode());
 
         h.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onCourseClick(c);
+            if (itemClickListener != null) itemClickListener.onCourseClick(c);
+        });
+
+        h.btnDelete.setOnClickListener(v -> {
+            if (deleteClickListener != null) deleteClickListener.onDeleteClick(c);
         });
     }
 
@@ -59,10 +72,12 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvCode;
+        ImageButton btnDelete;
         VH(@NonNull View itemView) {
             super(itemView);
-            tvName = itemView.findViewById(R.id.tvName);
-            tvCode = itemView.findViewById(R.id.tvCode);
+            tvName    = itemView.findViewById(R.id.tvName);
+            tvCode    = itemView.findViewById(R.id.tvCode);
+            btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }
 }
