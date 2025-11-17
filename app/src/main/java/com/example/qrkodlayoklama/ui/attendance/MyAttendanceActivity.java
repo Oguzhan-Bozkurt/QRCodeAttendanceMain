@@ -32,7 +32,7 @@ public class MyAttendanceActivity extends BaseActivity {
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_attendance);
-        setupToolbar("Devam Durumum", false);
+        setupToolbar("Devam Durumum", true);
 
         progress = findViewById(R.id.progress);
         empty    = findViewById(R.id.empty);
