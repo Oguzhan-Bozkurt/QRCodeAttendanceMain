@@ -27,7 +27,7 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
 
     @Override public void onBindViewHolder(@NonNull VH h, int position) {
         MyAttendanceDto it = items.get(position);
-        h.tvCourse.setText(it.getCourseName() + " (" + it.getCourseCode() + ")");
+        h.tvCourse.setText(it.getCourseName() + " (" + it.getCourseCode() + ")" + " - " + it.getDescription());
         h.tvCheckedAt.setText("Yoklamaya katılma: " + DateFormat.any(it.getCheckedAt() != null ? it.getCheckedAt() : "-"));
     }
 
