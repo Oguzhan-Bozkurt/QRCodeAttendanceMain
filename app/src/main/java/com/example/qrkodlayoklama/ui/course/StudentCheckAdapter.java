@@ -95,7 +95,7 @@ public class StudentCheckAdapter extends RecyclerView.Adapter<StudentCheckAdapte
         VH(@NonNull View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvName);
-            cb     = itemView.findViewById(R.id.cb);
+            cb = itemView.findViewById(R.id.cb);
         }
     }
 }

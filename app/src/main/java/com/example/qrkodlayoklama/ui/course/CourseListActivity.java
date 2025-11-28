@@ -18,6 +18,7 @@ import com.example.qrkodlayoklama.data.remote.model.CourseDto;
 import com.example.qrkodlayoklama.ui.BaseActivity;
 import com.example.qrkodlayoklama.ui.attendance.QrShowActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -26,7 +27,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class CourseListActivity extends BaseActivity {
-
     private ProgressBar progress;
     private TextView empty;
     private RecyclerView recycler;
@@ -58,6 +58,16 @@ public class CourseListActivity extends BaseActivity {
                     .setMessage(course.getCourseName()
                             + " dersini ve yoklama kayıtlarını silmek istediğinize emin misiniz?")
                     .setPositiveButton("Evet", (d, w) -> deleteCourse(course))
+                    .setNegativeButton("İptal", null)
+                    .show();
+        });
+
+        adapter.setEditClickListener(course -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Dersi Güncelle")
+                    .setMessage(course.getCourseName()
+                            + " dersini güncellemek istediğinize emin misiniz?")
+                    .setPositiveButton("Evet", (d, w) -> editCourse(course))
                     .setNegativeButton("İptal", null)
                     .show();
         });
@@ -113,4 +123,14 @@ public class CourseListActivity extends BaseActivity {
             }
         });
     }
+
+    private void editCourse(CourseDto course) {
+        Intent i = new Intent(CourseListActivity.this, CourseCreateActivity.class);
+        i.putExtra("mode", "edit");
+        i.putExtra("courseId", course.getId());
+        i.putExtra("courseName", course.getCourseName());
+        i.putExtra("courseCode", course.getCourseCode());
+        startActivity(i);
+    }
+
 }

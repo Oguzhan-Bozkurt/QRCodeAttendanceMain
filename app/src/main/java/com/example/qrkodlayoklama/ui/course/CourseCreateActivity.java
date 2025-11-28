@@ -17,7 +17,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.CourseCreateRequest;
+import com.example.qrkodlayoklama.data.remote.model.CourseDetailDto;
 import com.example.qrkodlayoklama.data.remote.model.CourseDto;
+import com.example.qrkodlayoklama.data.remote.model.UserDto;
 import com.example.qrkodlayoklama.ui.BaseActivity;
 
 import java.util.ArrayList;
@@ -36,6 +38,8 @@ public class CourseCreateActivity extends BaseActivity {
     private SelectedStudentAdapter adapter;
 
     private final ArrayList<Long> selectedStudentIds = new ArrayList<>();
+    private boolean isEditMode = false;
+    private Long courseId = -1L;
 
     private ActivityResultLauncher<Intent> pickStudentsLauncher;
 
@@ -51,6 +55,21 @@ public class CourseCreateActivity extends BaseActivity {
         btnAddStudent = findViewById(R.id.btnAddStudent);
         progress = findViewById(R.id.progress);
         recycler = findViewById(R.id.recycler);
+
+        Intent intent = getIntent();
+        String mode = intent.getStringExtra("mode");
+        isEditMode = "edit".equals(mode);
+
+        if (isEditMode) {
+            setupToolbar("Dersi Güncelle", true);
+            courseId = intent.getLongExtra("courseId", -1L);
+            String courseName = intent.getStringExtra("courseName");
+            String courseCode = intent.getStringExtra("courseCode");
+            if (courseName != null) etCourseName.setText(courseName);
+            if (courseCode != null) etCourseCode.setText(courseCode);
+            loadCourseDetails(courseId);
+        }
+
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new SelectedStudentAdapter();
@@ -123,27 +142,122 @@ public class CourseCreateActivity extends BaseActivity {
         String code = etCourseCode.getText().toString().trim();
 
         if (name.isEmpty() || code.isEmpty() || selectedStudentIds.isEmpty()) {
-            Toast.makeText(this, "Ders adı/kodu ve en az 1 öğrenci gerekli", Toast.LENGTH_SHORT).show(); return;
+            Toast.makeText(this, "Ders adı/kodu ve en az 1 öğrenci gerekli", Toast.LENGTH_SHORT).show();
+            return;
         }
 
         setLoading(true);
 
-        ApiClient.courses()
-                .create(new CourseCreateRequest(name, code, new ArrayList<>(selectedStudentIds)))
-                .enqueue(new Callback<CourseDto>() {
-                    @Override public void onResponse(Call<CourseDto> call, Response<CourseDto> resp) {
-                        setLoading(false);
-                        if (resp.isSuccessful() && resp.body() != null) {
-                            Toast.makeText(CourseCreateActivity.this, "Ders kaydedildi", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            Toast.makeText(CourseCreateActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+        CourseCreateRequest body =
+                new CourseCreateRequest(name, code, new ArrayList<>(selectedStudentIds));
+
+        if (isEditMode && courseId > 0) {
+            ApiClient.courses()
+                    .update(courseId, body)
+                    .enqueue(new retrofit2.Callback<CourseDetailDto>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<CourseDetailDto> call,
+                                               retrofit2.Response<CourseDetailDto> resp) {
+                            setLoading(false);
+                            if (resp.isSuccessful()) {
+                                Toast.makeText(CourseCreateActivity.this,
+                                        "Ders güncellendi", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                Toast.makeText(CourseCreateActivity.this,
+                                        "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(retrofit2.Call<CourseDetailDto> call, Throwable t) {
+                            setLoading(false);
+                            Toast.makeText(CourseCreateActivity.this,
+                                    "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+        } else {
+            ApiClient.courses()
+                    .create(body)
+                    .enqueue(new retrofit2.Callback<CourseDto>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<CourseDto> call,
+                                               retrofit2.Response<CourseDto> resp) {
+                            setLoading(false);
+                            if (resp.isSuccessful() && resp.body() != null) {
+                                Toast.makeText(CourseCreateActivity.this,
+                                        "Ders kaydedildi", Toast.LENGTH_SHORT).show();
+                                finish();
+                            } else {
+                                Toast.makeText(CourseCreateActivity.this,
+                                        "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(retrofit2.Call<CourseDto> call, Throwable t) {
+                            setLoading(false);
+                            Toast.makeText(CourseCreateActivity.this,
+                                    "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+        }
+    }
+
+    private void loadCourseDetails(long id) {
+        setLoading(true);
+        ApiClient.courses().detail(id).enqueue(new retrofit2.Callback<CourseDetailDto>() {
+            @Override
+            public void onResponse(retrofit2.Call<CourseDetailDto> call,
+                                   retrofit2.Response<CourseDetailDto> resp) {
+                setLoading(false);
+                if (resp.isSuccessful() && resp.body() != null) {
+                    CourseDetailDto dto = resp.body();
+
+                    if (dto.getCourseName() != null)
+                        etCourseName.setText(dto.getCourseName());
+                    if (dto.getCourseCode() != null)
+                        etCourseCode.setText(dto.getCourseCode());
+
+                    selectedStudentIds.clear();
+                    List<SelectedStudentAdapter.StudentUi> uiList = new ArrayList<>();
+
+                    if (dto.getStudents() != null) {
+                        for (UserDto u : dto.getStudents()) {
+                            if (u.getId() == null) continue;
+                            long id = u.getId();
+                            selectedStudentIds.add(id);
+
+                            String fullName = (u.getName() != null ? u.getName() : "")
+                                    + " " +
+                                    (u.getSurname() != null ? u.getSurname() : "");
+                            long userName = (u.getUserName() != null ? u.getUserName() : -1L);
+
+                            uiList.add(new SelectedStudentAdapter.StudentUi(
+                                    id,
+                                    fullName.trim(),
+                                    userName
+                            ));
                         }
                     }
-                    @Override public void onFailure(Call<CourseDto> call, Throwable t) {
-                        setLoading(false);
-                        Toast.makeText(CourseCreateActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    }
-                });
+
+                    adapter.setItems(uiList);
+                } else {
+                    Toast.makeText(CourseCreateActivity.this,
+                            "Ders detayı alınamadı: " + resp.code(),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<CourseDetailDto> call, Throwable t) {
+                setLoading(false);
+                Toast.makeText(CourseCreateActivity.this,
+                        "Ağ hatası: " + t.getMessage(),
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
+
 }

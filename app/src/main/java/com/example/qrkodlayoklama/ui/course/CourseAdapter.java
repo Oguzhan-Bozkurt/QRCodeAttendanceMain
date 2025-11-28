@@ -25,9 +25,13 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
     public interface OnDeleteClickListener {
         void onDeleteClick(CourseDto course);
     }
+    public interface OnEditClickListener {
+        void onEditClick(CourseDto course);
+    }
 
     private OnItemClickListener itemClickListener;
     private OnDeleteClickListener deleteClickListener;
+    private OnEditClickListener editClickListener;
 
     public void setItems(List<CourseDto> data) {
         items.clear();
@@ -41,6 +45,10 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
 
     public void setOnDeleteClickListener(OnDeleteClickListener l) {
         this.deleteClickListener = l;
+    }
+
+    public void setEditClickListener(OnEditClickListener l) {
+        this.editClickListener = l;
     }
 
     @NonNull @Override
@@ -60,6 +68,10 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
             if (itemClickListener != null) itemClickListener.onCourseClick(c);
         });
 
+        h.btnEdit.setOnClickListener(v -> {
+            if (editClickListener != null) editClickListener.onEditClick(c);
+        });
+
         h.btnDelete.setOnClickListener(v -> {
             if (deleteClickListener != null) deleteClickListener.onDeleteClick(c);
         });
@@ -72,12 +84,13 @@ public class CourseAdapter extends RecyclerView.Adapter<CourseAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         TextView tvName, tvCode;
-        ImageButton btnDelete;
+        ImageButton btnDelete, btnEdit;
         VH(@NonNull View itemView) {
             super(itemView);
-            tvName    = itemView.findViewById(R.id.tvName);
-            tvCode    = itemView.findViewById(R.id.tvCode);
+            tvName = itemView.findViewById(R.id.tvName);
+            tvCode = itemView.findViewById(R.id.tvCode);
             btnDelete = itemView.findViewById(R.id.btnDelete);
+            btnEdit = itemView.findViewById(R.id.btnEdit);
         }
     }
 }
