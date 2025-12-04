@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.QrKodlaYoklama" parent="Theme.Material3.Light.NoActionBar"/>
+
+    <style name="PopupMenu.DarkText" parent="ThemeOverlay.Material3">
+        <item name="android:textColor">@color/menu_text_dark</item>
+        <item name="colorOnSurface">@color/menu_text_dark</item>
+
+        <item name="textAppearanceLargePopupMenu">@style/PopupMenuTextAppearance</item>
+        <item name="textAppearanceSmallPopupMenu">@style/PopupMenuTextAppearance</item>
+    </style>
+
+    <style name="PopupMenuTextAppearance" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/menu_text_dark</item>
+    </style>
 </resources>

@@ -7,7 +7,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -48,36 +47,50 @@ public class AttendanceHistoryActivity extends BaseActivity {
 
         setupToolbar(courseName, true);
 
-
         progress = findViewById(R.id.progress);
         recycler = findViewById(R.id.recyclerHistory);
         empty = findViewById(R.id.empty);
-        recycler.setLayoutManager(new LinearLayoutManager(this));
 
+        recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new AttendanceHistoryAdapter(courseId, courseName);
         recycler.setAdapter(adapter);
 
         loadAttendanceHistory();
     }
 
+    @Override protected void onResume() {
+        super.onResume();
+        loadAttendanceHistory();
+    }
+
     private void setLoading(boolean loading) {
-        progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
+    }
+
+    private void showListOrEmpty(boolean hasData) {
+        if (empty != null)   empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
+        if (recycler != null) recycler.setVisibility(hasData ? View.VISIBLE : View.GONE);
     }
 
     private void loadAttendanceHistory() {
         setLoading(true);
+        if (empty != null) empty.setVisibility(View.GONE);
+
         ApiClient.attendance().history(courseId).enqueue(new Callback<List<SessionHistoryDto>>() {
             @Override public void onResponse(Call<List<SessionHistoryDto>> call, Response<List<SessionHistoryDto>> resp) {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
-                    if (!resp.body().isEmpty()) adapter.setItems(resp.body());
-                    else empty.setVisibility(View.VISIBLE);
+                    List<SessionHistoryDto> data = resp.body();
+                    adapter.setItems(data);
+                    showListOrEmpty(!data.isEmpty());
                 } else {
+                    showListOrEmpty(false);
                     Toast.makeText(AttendanceHistoryActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
                 }
             }
             @Override public void onFailure(Call<List<SessionHistoryDto>> call, Throwable t) {
                 setLoading(false);
+                showListOrEmpty(false);
                 Toast.makeText(AttendanceHistoryActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
