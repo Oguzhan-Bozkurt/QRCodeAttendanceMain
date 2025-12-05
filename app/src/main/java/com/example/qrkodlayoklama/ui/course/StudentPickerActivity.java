@@ -21,6 +21,7 @@ import java.util.List;
 
 public class StudentPickerActivity extends BaseActivity {
 
+    public static final String EXTRA_COURSE_ID = "course_id";
     public static final String EXTRA_DRAFT_NAME = "draft_name";
     public static final String EXTRA_DRAFT_CODE = "draft_code";
     public static final String EXTRA_PRESELECTED_IDS = "preselected_ids";
@@ -48,6 +49,8 @@ public class StudentPickerActivity extends BaseActivity {
         recycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new StudentCheckAdapter();
         recycler.setAdapter(adapter);
+
+        long courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
 
         long[] pre = getIntent().getLongArrayExtra(EXTRA_PRESELECTED_IDS);
         selected.clear();
@@ -90,16 +93,19 @@ public class StudentPickerActivity extends BaseActivity {
             finish();
         });
 
-        loadAllStudents();
+        loadStudents(courseId > 0 ? courseId : null);
     }
 
-    private void loadAllStudents() {
+    private void loadStudents(@Nullable Long courseId) {
         setLoading(true);
-        ApiClient.users().allStudents().enqueue(new retrofit2.Callback<List<UserDto>>() {
-            @Override public void onResponse(
-                    retrofit2.Call<List<UserDto>> call,
-                    retrofit2.Response<List<UserDto>> resp) {
+        retrofit2.Call<List<UserDto>> call =
+                (courseId == null || courseId <= 0)
+                        ? ApiClient.users().allStudents()
+                        : ApiClient.courses().students(courseId);
 
+        call.enqueue(new retrofit2.Callback<List<UserDto>>() {
+            @Override public void onResponse(retrofit2.Call<List<UserDto>> call,
+                                             retrofit2.Response<List<UserDto>> resp) {
                 setLoading(false);
                 if (resp.isSuccessful() && resp.body() != null) {
                     adapter.setItems(resp.body());
@@ -109,9 +115,7 @@ public class StudentPickerActivity extends BaseActivity {
                 }
             }
 
-            @Override public void onFailure(
-                    retrofit2.Call<List<UserDto>> call,
-                    Throwable t) {
+            @Override public void onFailure(retrofit2.Call<List<UserDto>> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(StudentPickerActivity.this,
                         "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();

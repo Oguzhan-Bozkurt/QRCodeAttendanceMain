@@ -40,4 +40,5 @@ public interface CoursesApi {
 
     @PUT("courses/{id}")
     Call<CourseDetailDto> update(@Path("id") long id, @Body CourseCreateRequest body);
+
 }

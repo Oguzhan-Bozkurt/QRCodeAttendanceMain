@@ -28,6 +28,7 @@ import com.example.qrkodlayoklama.util.DateFormat;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -43,7 +44,7 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
     public static final String RESULT_DELETED = "result_deleted";
 
     private ActivityResultLauncher<Intent> studentPickerLauncher;
-    private final HashSet<Long> presentIds = new java.util.HashSet<>();
+    private final HashSet<Long> presentIds = new HashSet<>();
 
     private long courseId, sessionId;
     String courseName;
@@ -106,21 +107,24 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
                     }
                 });
 
-
         if (btnAddManualStudent != null) {
             btnAddManualStudent.setOnClickListener(v -> {
                 Intent i = new Intent(AttendanceSessionDetailActivity.this, StudentPickerActivity.class);
-
-                long[] pre = new long[presentIds.size()];
-                int k = 0; for (Long id : presentIds) pre[k++] = id;
-                i.putExtra(StudentPickerActivity.EXTRA_PRESELECTED_IDS, pre);
-
+                i.putExtra(StudentPickerActivity.EXTRA_COURSE_ID, courseId);
+                i.putExtra(StudentPickerActivity.EXTRA_PRESELECTED_IDS, presentIdsArray());
                 studentPickerLauncher.launch(i);
             });
         }
 
         loadDetail();
         loadRecords();
+    }
+
+    private long[] presentIdsArray() {
+        long[] arr = new long[presentIds.size()];
+        int i = 0;
+        for (Long id : presentIds) arr[i++] = id;
+        return arr;
     }
 
     private void setLoading(boolean b) {
@@ -195,9 +199,8 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
         }
 
         setLoading(true);
-        final java.util.concurrent.atomic.AtomicInteger pending =
-                new java.util.concurrent.atomic.AtomicInteger(
-                        (toAdd != null ? toAdd.size() : 0) + (toRemove != null ? toRemove.size() : 0));
+        final AtomicInteger pending =
+                new AtomicInteger((toAdd != null ? toAdd.size() : 0) + (toRemove != null ? toRemove.size() : 0));
 
         if (toAdd != null) for (Long id : toAdd) {
             var body = new com.example.qrkodlayoklama.data.remote.model.ManualAddRequest(id);
@@ -298,7 +301,7 @@ public class AttendanceSessionDetailActivity extends BaseActivity {
                             if (tvInfo != null) tvInfo.setText(s.getDescription());
                             Toast.makeText(AttendanceSessionDetailActivity.this,
                                     "Oturum güncellendi", Toast.LENGTH_SHORT).show();
-                            somethingChanged = true;   // <—
+                            somethingChanged = true;
                         } else {
                             Toast.makeText(AttendanceSessionDetailActivity.this,
                                     "Güncelleme hatası: " + resp.code(), Toast.LENGTH_LONG).show();
