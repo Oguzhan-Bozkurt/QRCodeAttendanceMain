@@ -63,6 +63,91 @@ public class AttendanceHistoryActivity extends BaseActivity {
         loadAttendanceHistory();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_attendance_history, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@androidx.annotation.NonNull android.view.MenuItem item) {
+        if (item.getItemId() == R.id.action_export_pdf) {
+            exportPdf();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void exportPdf() {
+        setLoading(true);
+        ApiClient.attendance().exportCoursePdf(courseId).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> resp) {
+                setLoading(false);
+                if (resp.isSuccessful() && resp.body() != null) {
+                    try {
+                        String safeCourse = (courseName == null ? "Ders" : courseName).replaceAll("[^\\w\\-]+", "_");
+                        String fileName = "Yoklama_" + safeCourse + "_" +
+                                new java.text.SimpleDateFormat("yyyyMMdd_HHmm", java.util.Locale.getDefault())
+                                        .format(new java.util.Date()) + ".pdf";
+
+                        boolean ok = saveToDownloads(resp.body().byteStream(), fileName);
+                        if (ok) {
+                            android.widget.Toast.makeText(AttendanceHistoryActivity.this,
+                                    "PDF indirildi: " + fileName, android.widget.Toast.LENGTH_LONG).show();
+                        } else {
+                            android.widget.Toast.makeText(AttendanceHistoryActivity.this,
+                                    "PDF kaydedilemedi", android.widget.Toast.LENGTH_LONG).show();
+                        }
+                    } catch (Exception e) {
+                        android.widget.Toast.makeText(AttendanceHistoryActivity.this,
+                                "Hata: " + e.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    android.widget.Toast.makeText(AttendanceHistoryActivity.this,
+                            "İndirme hatası: " + resp.code(), android.widget.Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                setLoading(false);
+                android.widget.Toast.makeText(AttendanceHistoryActivity.this,
+                        "Ağ hatası: " + t.getMessage(), android.widget.Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private boolean saveToDownloads(java.io.InputStream in, String fileName) {
+        try {
+            android.content.ContentResolver resolver = getContentResolver();
+            android.content.ContentValues values = new android.content.ContentValues();
+            values.put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName);
+            values.put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/pdf");
+            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 1);
+
+            android.net.Uri uri = resolver.insert(
+                    android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, values);
+            if (uri == null) return false;
+
+            try (java.io.OutputStream out = resolver.openOutputStream(uri)) {
+                if (out == null) return false;
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) != -1) out.write(buf, 0, len);
+                out.flush();
+            } finally {
+                in.close();
+            }
+
+            values.clear();
+            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0);
+            resolver.update(uri, values, null, null);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private void setLoading(boolean loading) {
         if (progress != null) progress.setVisibility(loading ? View.VISIBLE : View.GONE);
     }

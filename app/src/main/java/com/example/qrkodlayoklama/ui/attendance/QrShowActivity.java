@@ -6,24 +6,25 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.LinearLayout;
-import android.widget.ArrayAdapter;
 
 import androidx.annotation.Nullable;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
+import com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceSessionDto;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceStartRequest;
+import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
 import com.example.qrkodlayoklama.ui.BaseActivity;
-import com.example.qrkodlayoklama.ui.course.CourseListActivity;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
@@ -32,7 +33,9 @@ import com.google.zxing.common.BitMatrix;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -42,19 +45,24 @@ public class QrShowActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     public static final String EXTRA_COURSE_NAME = "courseName";
+
     private Long courseId;
     private String courseName;
+
     private boolean polling = false;
     private Call<AttendanceSessionDto> inflight;
+
     private ProgressBar progress;
     private TextView tvTitle, tvInfo, tvSecret, tvExpire, tvStatus, tvJoined;
     private ImageView imgQr;
+    private ImageButton btnToolbarRefresh;
     private Handler handler = new Handler(Looper.getMainLooper());
     private Runnable ticker, pollTask;
     private Instant expiresAt;
-    private Button btnStop, btnRefresh, btnStart, btnSeeJoined, btnHistory;
+    private View btnStop;
     private Spinner spMinutes;
     private LinearLayout boxStart;
+    private View btnStart, btnSeeJoined, btnHistory;
     private EditText etDescription;
 
     @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -75,28 +83,36 @@ public class QrShowActivity extends BaseActivity {
         tvInfo   = findViewById(R.id.tvInfo);
         tvSecret = findViewById(R.id.tvSecret);
         tvExpire = findViewById(R.id.tvExpire);
-        imgQr    = findViewById(R.id.imgQr);
-        btnStop = findViewById(R.id.btnStop);
-        tvStatus  = findViewById(R.id.tvStatus);
-        btnRefresh= findViewById(R.id.btnRefresh);
+        tvStatus = findViewById(R.id.tvStatus);
         tvJoined = findViewById(R.id.tvJoined);
+        imgQr    = findViewById(R.id.imgQr);
+        btnStop  = findViewById(R.id.btnStop);
         spMinutes = findViewById(R.id.spMinutes);
         boxStart  = findViewById(R.id.boxStart);
         btnStart  = findViewById(R.id.btnStart);
         btnSeeJoined = findViewById(R.id.btnSeeJoined);
-        btnHistory = findViewById(R.id.btnHistory);
+        btnHistory   = findViewById(R.id.btnHistory);
         etDescription = findViewById(R.id.etDescription);
+        btnToolbarRefresh = findViewById(R.id.btnToolbarRefresh);
 
-        ArrayAdapter<CharSequence> adp =
-                ArrayAdapter.createFromResource(this, R.array.minutes_labels,
-                        android.R.layout.simple_spinner_item);
+        tvInfo.setText("");
+        tvInfo.setVisibility(View.GONE);
+        tvStatus.setText("");
+        tvStatus.setVisibility(View.GONE);
+        imgQr.setVisibility(View.GONE);
+        btnStop.setVisibility(View.GONE);
+        tvJoined.setVisibility(View.GONE);
+        tvSecret.setVisibility(View.GONE);
+        tvExpire.setVisibility(View.GONE);
+
+        prefillNextDescription(courseId, etDescription);
+
+        ArrayAdapter<CharSequence> adp = ArrayAdapter.createFromResource(
+                this, R.array.minutes_labels, android.R.layout.simple_spinner_item);
         adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spMinutes.setAdapter(adp);
 
-        btnStart.setOnClickListener(v -> {
-            int mins = getSelectedMinutes();
-            startSession(mins);
-        });
+        btnStart.setOnClickListener(v -> startSession(getSelectedMinutes()));
 
         btnSeeJoined.setOnClickListener(v -> {
             Intent i = new Intent(this, AttendanceRecordsActivity.class);
@@ -111,37 +127,7 @@ public class QrShowActivity extends BaseActivity {
             startActivity(i);
         });
 
-        btnRefresh.setOnClickListener(v -> loadActive());
-
-        btnStop.setOnClickListener(v -> {
-            setLoading(true);
-            ApiClient.attendance().stop(courseId).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
-                @Override public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call,
-                                                 retrofit2.Response<okhttp3.ResponseBody> resp) {
-                    setLoading(false);
-                    if (resp.isSuccessful() || resp.code() == 404) {
-                        if (imgQr != null) imgQr.setVisibility(View.GONE);
-                        if (tvInfo != null) tvInfo.setText("Yoklama oturumu kapatıldı.");
-                        if (btnStop != null) btnStop.setEnabled(false);
-                        if (tvSecret != null) tvSecret.setText("Kod:");
-                        if (tvExpire != null) tvExpire.setText("Kalan süre: -");
-                        stopTicker();
-                        stopPolling();
-                        Toast.makeText(QrShowActivity.this, "Oturum kapatıldı", Toast.LENGTH_SHORT).show();
-                        showNoActive();
-                    } else {
-                        Toast.makeText(QrShowActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
-                        btnStop.setEnabled(true);
-                    }
-                }
-
-                @Override public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
-                    setLoading(false);
-                    Toast.makeText(QrShowActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
-                    btnStop.setEnabled(true);
-                }
-            });
-        });
+        btnToolbarRefresh.setOnClickListener(v -> loadActive());
 
         tvTitle.setText(courseName);
         loadOrStart();
@@ -164,6 +150,16 @@ public class QrShowActivity extends BaseActivity {
         stopPolling();
     }
 
+    @Override protected void onResume() {
+        super.onResume();
+        if (boxStart.getVisibility() == View.VISIBLE) {
+            CharSequence cur = etDescription.getText();
+            if (cur == null || cur.toString().trim().isEmpty()) {
+                prefillNextDescription(courseId, etDescription);
+            }
+        }
+    }
+
     private void setLoading(boolean b) {
         progress.setVisibility(b ? View.VISIBLE : View.GONE);
         imgQr.setAlpha(b ? 0.3f : 1f);
@@ -184,22 +180,25 @@ public class QrShowActivity extends BaseActivity {
                     finish();
                 } else {
                     Toast.makeText(QrShowActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                    showNoActive();
                 }
             }
             @Override public void onFailure(Call<AttendanceSessionDto> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(QrShowActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                showError("Ağ hatası");
             }
         });
     }
 
     private void startSession(int minutes) {
-        String desc = etDescription != null ? etDescription.getText().toString().trim() : "";
+        String desc = etDescription.getText().toString().trim();
         if (desc.isEmpty()) {
             Toast.makeText(this, "Açıklama zorunlu", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        setLoading(true);
         inflight = ApiClient.attendance().start(courseId, new AttendanceStartRequest(minutes, desc));
         inflight.enqueue(new Callback<AttendanceSessionDto>() {
             @Override public void onResponse(Call<AttendanceSessionDto> call, Response<AttendanceSessionDto> resp) {
@@ -208,11 +207,13 @@ public class QrShowActivity extends BaseActivity {
                 } else {
                     setLoading(false);
                     Toast.makeText(QrShowActivity.this, "Başlatılamadı: " + resp.code(), Toast.LENGTH_LONG).show();
+                    showNoActive();
                 }
             }
             @Override public void onFailure(Call<AttendanceSessionDto> call, Throwable t) {
                 setLoading(false);
                 Toast.makeText(QrShowActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                showError("Ağ hatası");
             }
         });
     }
@@ -220,22 +221,52 @@ public class QrShowActivity extends BaseActivity {
     private void bindSession(AttendanceSessionDto dto) {
         setLoading(false);
 
-        if (imgQr != null)      imgQr.setVisibility(View.VISIBLE);
-        if (btnStop != null) {  btnStop.setEnabled(true); btnStop.setVisibility(View.VISIBLE); }
-        if (tvStatus != null) { tvStatus.setText(""); tvStatus.setVisibility(View.GONE); }
-        if (btnRefresh != null) btnRefresh.setVisibility(View.GONE);
-        if (boxStart != null)   boxStart.setVisibility(View.GONE);
-        if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.VISIBLE);
+        imgQr.setVisibility(View.VISIBLE);
+        btnStop.setVisibility(View.VISIBLE);
+        btnStop.setEnabled(true);
+        tvStatus.setText("");
+        tvStatus.setVisibility(View.GONE);
+        boxStart.setVisibility(View.GONE);
+        btnSeeJoined.setVisibility(View.VISIBLE);
+        tvSecret.setVisibility(View.VISIBLE);
+        tvExpire.setVisibility(View.VISIBLE);
+
+        tvJoined.setText("Katılan: 0");
+        tvJoined.setVisibility(View.VISIBLE);
 
         tvInfo.setText("Yoklama aktif" + (dto.getDescription() != null ? (" • " + dto.getDescription()) : ""));
+        tvInfo.setVisibility(View.VISIBLE);
+
         tvSecret.setText("Kod: " + dto.getSecret());
 
         String payload = "ATT|" + courseId + "|" + dto.getSecret();
         Bitmap bmp = makeQr(payload, 900);
         if (bmp != null) imgQr.setImageBitmap(bmp);
 
-        try { expiresAt = java.time.Instant.parse(dto.getExpiresAt()); }
+        try { expiresAt = Instant.parse(dto.getExpiresAt()); }
         catch (Exception e) { expiresAt = null; }
+
+        btnStop.setOnClickListener(v -> {
+            setLoading(true);
+            ApiClient.attendance().stop(courseId).enqueue(new retrofit2.Callback<okhttp3.ResponseBody>() {
+                @Override public void onResponse(retrofit2.Call<okhttp3.ResponseBody> call,
+                                                 retrofit2.Response<okhttp3.ResponseBody> resp) {
+                    setLoading(false);
+                    if (resp.isSuccessful() || resp.code() == 404) {
+                        Toast.makeText(QrShowActivity.this, "Oturum kapatıldı", Toast.LENGTH_SHORT).show();
+                        showNoActive();
+                    } else {
+                        Toast.makeText(QrShowActivity.this, "Hata: " + resp.code(), Toast.LENGTH_LONG).show();
+                        btnStop.setEnabled(true);
+                    }
+                }
+                @Override public void onFailure(retrofit2.Call<okhttp3.ResponseBody> call, Throwable t) {
+                    setLoading(false);
+                    Toast.makeText(QrShowActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                    btnStop.setEnabled(true);
+                }
+            });
+        });
 
         startPolling(courseId);
         startTicker();
@@ -258,8 +289,7 @@ public class QrShowActivity extends BaseActivity {
                     showNoActive();
                     return;
                 }
-                long m = secs / 60;
-                long s = secs % 60;
+                long m = secs / 60, s = secs % 60;
                 tvExpire.setText(String.format("Kalan süre: %02d:%02d", m, s));
                 handler.postDelayed(this, 1000);
             }
@@ -281,13 +311,12 @@ public class QrShowActivity extends BaseActivity {
             BitMatrix matrix = new MultiFormatWriter()
                     .encode(text, BarcodeFormat.QR_CODE, size, size, hints);
 
-            int w = matrix.getWidth();
-            int h = matrix.getHeight();
+            int w = matrix.getWidth(), h = matrix.getHeight();
             int[] pixels = new int[w * h];
             for (int y = 0; y < h; y++) {
-                int offset = y * w;
+                int off = y * w;
                 for (int x = 0; x < w; x++) {
-                    pixels[offset + x] = matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
+                    pixels[off + x] = matrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF;
                 }
             }
             Bitmap bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
@@ -313,7 +342,6 @@ public class QrShowActivity extends BaseActivity {
                     showError("Hata: " + resp.code());
                 }
             }
-
             @Override public void onFailure(retrofit2.Call<AttendanceSessionDto> call, Throwable t) {
                 setLoading(false);
                 showError("Ağ hatası: " + t.getMessage());
@@ -323,28 +351,43 @@ public class QrShowActivity extends BaseActivity {
 
     private void showNoActive() {
         stopTicker();
-        if (imgQr != null) imgQr.setVisibility(View.GONE);
-        if (btnStop != null) btnStop.setEnabled(false);
-        if (tvStatus != null) {
-            tvStatus.setText("Bu ders için aktif yoklama oturumu yok.");
-            tvStatus.setVisibility(View.VISIBLE);
-        }
-        if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
-        if (boxStart != null)   boxStart.setVisibility(View.VISIBLE);
-        if (etDescription != null) etDescription.setText("");
+        stopPolling();
+
+        imgQr.setVisibility(View.GONE);
+        btnStop.setVisibility(View.GONE);
+        btnStop.setEnabled(false);
+        btnSeeJoined.setVisibility(View.GONE);
+
+        tvJoined.setVisibility(View.GONE);
+        tvInfo.setText("");
+        tvInfo.setVisibility(View.GONE);
+
+        tvStatus.setText("Bu ders için aktif yoklama oturumu yok.");
+        tvStatus.setVisibility(View.VISIBLE);
+
         tvSecret.setText("Kod:");
-        tvExpire.setText("Kalan süre: -");
-        if (btnSeeJoined != null) btnSeeJoined.setVisibility(View.GONE);
+        tvExpire.setText("Kalan süre: 0");
+
+        tvSecret.setVisibility(View.GONE);
+        tvExpire.setVisibility(View.GONE);
+
+        boxStart.setVisibility(View.VISIBLE);
+
+        CharSequence cur = etDescription.getText();
+        if (cur == null || cur.toString().trim().isEmpty()) {
+            prefillNextDescription(courseId, etDescription);
+        }
     }
 
     private void showError(String msg) {
-        if (imgQr != null) imgQr.setVisibility(View.GONE);
-        if (btnStop != null) btnStop.setEnabled(false);
-        if (tvStatus != null) {
-            tvStatus.setText(msg);
-            tvStatus.setVisibility(View.VISIBLE);
-        }
-        if (btnRefresh != null) btnRefresh.setVisibility(View.VISIBLE);
+        imgQr.setVisibility(View.GONE);
+        btnStop.setVisibility(View.GONE);
+        btnStop.setEnabled(false);
+        tvStatus.setText(msg);
+        tvStatus.setVisibility(View.VISIBLE);
+        tvJoined.setVisibility(View.GONE);
+        tvSecret.setVisibility(View.GONE);
+        tvExpire.setVisibility(View.GONE);
     }
 
     private void startPolling(long courseId) {
@@ -366,41 +409,57 @@ public class QrShowActivity extends BaseActivity {
         return new Runnable() {
             @Override public void run() {
                 if (!polling) return;
-
                 ApiClient.attendance().activeSummary(courseId)
-                        .enqueue(new retrofit2.Callback<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto>() {
+                        .enqueue(new retrofit2.Callback<ActiveSummaryDto>() {
                             @Override public void onResponse(
-                                    retrofit2.Call<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> call,
-                                    retrofit2.Response<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> resp) {
-
+                                    retrofit2.Call<ActiveSummaryDto> call,
+                                    retrofit2.Response<ActiveSummaryDto> resp) {
                                 if (!polling) return;
-
                                 if (resp.isSuccessful() && resp.body() != null) {
-                                    long c = resp.body().getCount();
-                                    tvJoined.setText("Katılan: " + c);
-                                    if (polling && pollTask != null) {
-                                        handler.postDelayed(pollTask, 5000);
-                                    }
-                                } else if (resp.code() == 404) {
-                                    tvJoined.setText("Oturum kapandı");
-                                    stopPolling();
-                                } else {
-                                    if (polling && pollTask != null) {
-                                        handler.postDelayed(pollTask, 5000);
-                                    }
+                                    tvJoined.setText("Katılan: " + resp.body().getCount());
                                 }
+                                if (polling && pollTask != null) handler.postDelayed(pollTask, 5000);
                             }
-
                             @Override public void onFailure(
-                                    retrofit2.Call<com.example.qrkodlayoklama.data.remote.model.ActiveSummaryDto> call,
-                                    Throwable t) {
+                                    retrofit2.Call<ActiveSummaryDto> call, Throwable t) {
                                 if (!polling) return;
-                                if (polling && pollTask != null) {
-                                    handler.postDelayed(pollTask, 5000);
-                                }
+                                if (polling && pollTask != null) handler.postDelayed(pollTask, 5000);
                             }
                         });
             }
         };
+    }
+
+    private void prefillNextDescription(long courseId, EditText etDescription) {
+        if (etDescription == null) return;
+        ApiClient.attendance().history(courseId).enqueue(new retrofit2.Callback<List<SessionHistoryDto>>() {
+            @Override public void onResponse(
+                    retrofit2.Call<List<SessionHistoryDto>> call,
+                    retrofit2.Response<List<SessionHistoryDto>> resp) {
+                if (resp.isSuccessful() && resp.body() != null && !resp.body().isEmpty()) {
+                    String prev = resp.body().get(0).getDescription();
+                    String next = calcNextWeek(prev);
+                    etDescription.setText(next);
+                } else {
+                    etDescription.setText("1. Hafta");
+                }
+            }
+            @Override public void onFailure(
+                    retrofit2.Call<List<SessionHistoryDto>> call, Throwable t) {
+                etDescription.setText("1. Hafta");
+            }
+        });
+    }
+
+    private String calcNextWeek(String prev) {
+        if (prev == null) return "1. Hafta";
+        java.util.regex.Matcher m = Pattern
+                .compile("(\\d+)\\s*\\.?\\s*Hafta", Pattern.CASE_INSENSITIVE)
+                .matcher(prev);
+        int last = 0;
+        while (m.find()) {
+            try { last = Integer.parseInt(m.group(1)); } catch (NumberFormatException ignore) {}
+        }
+        return (last > 0) ? (last + 1) + ". Hafta" : "1. Hafta";
     }
 }
