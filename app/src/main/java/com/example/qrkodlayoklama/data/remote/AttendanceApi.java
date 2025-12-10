@@ -73,7 +73,4 @@ public interface AttendanceApi {
     @DELETE("courses/{courseId}/attendance/{sessionId}/records/{studentId}")
     Call<okhttp3.ResponseBody> manualRemove(@Path("courseId") long courseId, @Path("sessionId") long sessionId, @Path("studentId") long studentId);
 
-    @GET("courses/{courseId}/attendance/export.pdf")
-    @Streaming
-    Call<ResponseBody> exportCoursePdf(@Path("courseId") long courseId);
 }

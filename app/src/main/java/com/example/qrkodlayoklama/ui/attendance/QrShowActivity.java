@@ -45,9 +45,10 @@ public class QrShowActivity extends BaseActivity {
 
     public static final String EXTRA_COURSE_ID = "courseId";
     public static final String EXTRA_COURSE_NAME = "courseName";
+    public static final String EXTRA_COURSE_CODE = "courseCode";
 
     private Long courseId;
-    private String courseName;
+    private String courseName, courseCode;
 
     private boolean polling = false;
     private Call<AttendanceSessionDto> inflight;
@@ -72,6 +73,7 @@ public class QrShowActivity extends BaseActivity {
 
         courseId = getIntent().getLongExtra(EXTRA_COURSE_ID, -1);
         courseName = getIntent().getStringExtra(EXTRA_COURSE_NAME);
+        courseCode = getIntent().getStringExtra(EXTRA_COURSE_CODE);
         if (courseId == -1) {
             Toast.makeText(this, "Ders bilgisi bulunamadı", Toast.LENGTH_SHORT).show();
             finish();
@@ -124,12 +126,13 @@ public class QrShowActivity extends BaseActivity {
             Intent i = new Intent(QrShowActivity.this, AttendanceHistoryActivity.class);
             i.putExtra(AttendanceHistoryActivity.EXTRA_COURSE_ID, courseId);
             i.putExtra(AttendanceHistoryActivity.EXTRA_COURSE_NAME, courseName);
+            i.putExtra(AttendanceHistoryActivity.EXTRA_COURSE_CODE, courseCode);
             startActivity(i);
         });
 
         btnToolbarRefresh.setOnClickListener(v -> loadActive());
 
-        tvTitle.setText(courseName);
+        tvTitle.setText(courseName + " (" + courseCode + ")");
         loadOrStart();
     }
 

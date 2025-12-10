@@ -49,6 +49,7 @@ public class CourseListActivity extends BaseActivity {
             Intent i = new Intent(CourseListActivity.this, QrShowActivity.class);
             i.putExtra(QrShowActivity.EXTRA_COURSE_ID, item.getId());
             i.putExtra(QrShowActivity.EXTRA_COURSE_NAME, item.getCourseName());
+            i.putExtra(QrShowActivity.EXTRA_COURSE_CODE, item.getCourseCode());
             startActivity(i);
         });
 
