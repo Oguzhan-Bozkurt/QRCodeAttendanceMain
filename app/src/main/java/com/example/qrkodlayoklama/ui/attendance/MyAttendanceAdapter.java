@@ -1,9 +1,9 @@
 package com.example.qrkodlayoklama.ui.attendance;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -13,8 +13,11 @@ import com.example.qrkodlayoklama.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapter.VH> {
+public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapter.ViewHolder> {
+
+    private List<SummaryItem> items = new ArrayList<>();
 
     public static class SummaryItem {
         public final long courseId;
@@ -28,40 +31,38 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
             this.courseName = courseName;
             this.courseCode = courseCode;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            SummaryItem that = (SummaryItem) o;
+            return courseId == that.courseId;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(courseId);
+        }
     }
 
-    private final List<SummaryItem> items = new ArrayList<>();
+    public void setItems(List<SummaryItem> items) {
+        this.items = items;
+        notifyDataSetChanged();
+    }
 
     @NonNull
     @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_my_attendance, parent, false);
-        return new VH(v);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        SummaryItem it = items.get(position);
-
-        String name = it.courseName != null ? it.courseName : "";
-        String code = it.courseCode != null ? it.courseCode : "";
-        h.tvTitle.setText(name + " (" + code + ")");
-
-        h.tvSummary.setText("Oturum sayısı: " + it.totalSessions + "   Katıldığı: " + it.attended);
-
-        if (it.totalSessions > 0) {
-            double absenceRate = (double) (it.totalSessions - it.attended) / it.totalSessions;
-            if (absenceRate > 0.7) {
-                h.tvSummary.setTextColor(Color.RED);
-            }
-            else {
-                h.tvSummary.setTextColor(h.defaultSummaryColor);
-            }
-        }
-        else {
-            h.tvSummary.setTextColor(h.defaultSummaryColor);
-        }
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        SummaryItem item = items.get(position);
+        holder.bind(item);
     }
 
     @Override
@@ -69,21 +70,25 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
         return items.size();
     }
 
-    public void setItems(List<SummaryItem> newItems) {
-        items.clear();
-        if (newItems != null) items.addAll(newItems);
-        notifyDataSetChanged();
-    }
-
-    static class VH extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvSummary;
-        final int defaultSummaryColor;
 
-        VH(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvSummary = itemView.findViewById(R.id.tvSummary);
-            defaultSummaryColor = tvSummary.getCurrentTextColor();
+        }
+
+        public void bind(SummaryItem item) {
+            String titleText = item.courseName + " (" + item.courseCode + ")";
+            tvTitle.setText(titleText);
+
+            int total = item.totalSessions;
+            int attended = item.attended;
+
+            String summaryText = "Oturum sayısı: " + total + "   Katıldığı: " + attended;
+            tvSummary.setText(summaryText);
+
         }
     }
 }

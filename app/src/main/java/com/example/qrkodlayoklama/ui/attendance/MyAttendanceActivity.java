@@ -17,10 +17,8 @@ import com.example.qrkodlayoklama.ui.BaseActivity;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,13 +31,14 @@ public class MyAttendanceActivity extends BaseActivity {
     private RecyclerView recycler;
     private MyAttendanceAdapter adapter;
 
-    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_attendance);
         setupToolbar("Devam Durumum", true);
 
         progress = findViewById(R.id.progress);
-        empty    = findViewById(R.id.empty);
+        empty = findViewById(R.id.empty);
         recycler = findViewById(R.id.recycler);
 
         recycler.setLayoutManager(new LinearLayoutManager(this));
@@ -54,20 +53,19 @@ public class MyAttendanceActivity extends BaseActivity {
     }
 
     private void showListOrEmpty(boolean hasData) {
-        if (empty != null)   empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
+        if (empty != null) empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
         if (recycler != null) recycler.setVisibility(hasData ? View.VISIBLE : View.GONE);
     }
 
     private void load() {
         setLoading(true);
         ApiClient.attendance().myAttendance().enqueue(new Callback<List<MyAttendanceDto>>() {
-            @Override public void onResponse(Call<List<MyAttendanceDto>> call,
-                                             Response<List<MyAttendanceDto>> resp) {
+            @Override
+            public void onResponse(Call<List<MyAttendanceDto>> call, Response<List<MyAttendanceDto>> resp) {
                 setLoading(false);
                 if (!resp.isSuccessful() || resp.body() == null) {
                     showListOrEmpty(false);
-                    Toast.makeText(MyAttendanceActivity.this,
-                            "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MyAttendanceActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -102,11 +100,11 @@ public class MyAttendanceActivity extends BaseActivity {
                 showListOrEmpty(!summaries.isEmpty());
             }
 
-            @Override public void onFailure(Call<List<MyAttendanceDto>> call, Throwable t) {
+            @Override
+            public void onFailure(Call<List<MyAttendanceDto>> call, Throwable t) {
                 setLoading(false);
                 showListOrEmpty(false);
-                Toast.makeText(MyAttendanceActivity.this,
-                        "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MyAttendanceActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

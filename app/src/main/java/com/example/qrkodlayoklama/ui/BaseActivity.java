@@ -2,6 +2,7 @@ package com.example.qrkodlayoklama.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -12,10 +13,11 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.local.SessionManager;
-import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.ui.login.LoginActivity;
 
 public abstract class BaseActivity extends AppCompatActivity {
+
+    private static final String TAG = "BaseActivity";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,23 +52,28 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
 
         if (id == R.id.action_logout) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Çıkış Yap")
-                    .setMessage("Çıkış yapmak istediğinize emin misiniz?")
-                    .setPositiveButton("Evet", (d, w) -> doLogout())
-                    .setNegativeButton("İptal", null)
-                    .show();
+            showLogoutDialog();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    private void doLogout() {
+    protected void showLogoutDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Çıkış Yap")
+                .setMessage("Çıkış yapmak istediğinize emin misiniz?")
+                .setPositiveButton("Evet", (d, w) -> doLogout())
+                .setNegativeButton("İptal", null)
+                .show();
+    }
+
+    protected void doLogout() {
         try {
-            SessionManager.setToken(null);
             SessionManager.clear();
-        } catch (Throwable ignore) {}
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to clear SessionManager", t);
+        }
 
         try {
             getApplicationContext()
@@ -74,11 +81,9 @@ public abstract class BaseActivity extends AppCompatActivity {
                     .edit()
                     .clear()
                     .apply();
-        } catch (Throwable ignore) {}
-
-        try {
-            ApiClient.clearAuth();
-        } catch (Throwable ignore) {}
+        } catch (Throwable t) {
+            Log.e(TAG, "Failed to clear auth SharedPreferences", t);
+        }
 
         Intent i = new Intent(this, LoginActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

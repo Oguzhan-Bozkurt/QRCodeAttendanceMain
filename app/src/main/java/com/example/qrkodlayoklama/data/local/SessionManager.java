@@ -11,7 +11,7 @@ public final class SessionManager {
 
     public static void init(Context ctx) {
         if (prefs == null) {
-            prefs = ctx.getSharedPreferences("session_prefs", Context.MODE_PRIVATE);
+            prefs = ctx.getApplicationContext().getSharedPreferences("session_prefs", Context.MODE_PRIVATE);
             tokenCache = prefs.getString("access_token", null);
         }
     }
@@ -24,7 +24,7 @@ public final class SessionManager {
     }
 
     public static String getToken() {
-        if (tokenCache == null && prefs != null) {
+        if (tokenCache == null) {
             tokenCache = prefs.getString("access_token", null);
         }
         return tokenCache;
