@@ -10,43 +10,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.qrkodlayoklama.R;
+import com.example.qrkodlayoklama.data.remote.model.MyAttendanceSummaryDto;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapter.ViewHolder> {
 
-    private List<SummaryItem> items = new ArrayList<>();
+    private List<MyAttendanceSummaryDto> items = new ArrayList<>();
 
-    public static class SummaryItem {
-        public final long courseId;
-        public final String courseName;
-        public final String courseCode;
-        public int totalSessions = 0;
-        public int attended = 0;
-
-        public SummaryItem(long courseId, String courseName, String courseCode) {
-            this.courseId = courseId;
-            this.courseName = courseName;
-            this.courseCode = courseCode;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            SummaryItem that = (SummaryItem) o;
-            return courseId == that.courseId;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(courseId);
-        }
-    }
-
-    public void setItems(List<SummaryItem> items) {
+    public void setItems(List<MyAttendanceSummaryDto> items) {
         this.items = items;
         notifyDataSetChanged();
     }
@@ -61,7 +34,7 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        SummaryItem item = items.get(position);
+        MyAttendanceSummaryDto item = items.get(position);
         holder.bind(item);
     }
 
@@ -79,16 +52,15 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
             tvSummary = itemView.findViewById(R.id.tvSummary);
         }
 
-        public void bind(SummaryItem item) {
-            String titleText = item.courseName + " (" + item.courseCode + ")";
+        public void bind(MyAttendanceSummaryDto item) {
+            String titleText = item.getCourseName() + " (" + item.getCourseCode() + ")";
             tvTitle.setText(titleText);
 
-            int total = item.totalSessions;
-            int attended = item.attended;
+            int total = item.getTotalSessions();
+            int attended = item.getAttendedSessions();
 
             String summaryText = "Oturum sayısı: " + total + "   Katıldığı: " + attended;
             tvSummary.setText(summaryText);
-
         }
     }
 }

@@ -7,7 +7,7 @@ import com.example.qrkodlayoklama.data.remote.model.AttendanceStartRequest;
 import com.example.qrkodlayoklama.data.remote.model.AttendanceUpdateRequest;
 import com.example.qrkodlayoklama.data.remote.model.ManualAddRequest;
 import com.example.qrkodlayoklama.data.remote.model.MarkRequest;
-import com.example.qrkodlayoklama.data.remote.model.MyAttendanceDto;
+import com.example.qrkodlayoklama.data.remote.model.MyAttendanceSummaryDto; // Yeni DTO import edildi
 import com.example.qrkodlayoklama.data.remote.model.SessionHistoryDto;
 
 import java.util.List;
@@ -54,7 +54,7 @@ public interface AttendanceApi {
     Call<List<AttendanceRecordDto>> sessionRecords(@Path("courseId") long courseId, @Path("sessionId") long sessionId);
 
     @GET("attendance/my")
-    Call<List<MyAttendanceDto>> myAttendance();
+    Call<List<MyAttendanceSummaryDto>> myAttendance();
 
     @POST("courses/{courseId}/attendance/{sessionId}/manual-add")
     Call<ResponseBody> manualAdd(@Path("courseId") long courseId, @Path("sessionId") long sessionId, @Body ManualAddRequest body);
