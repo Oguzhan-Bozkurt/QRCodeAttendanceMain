@@ -2,11 +2,13 @@ package com.example.qrkodlayoklama.ui.course;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -132,6 +134,11 @@ public class CourseListActivity extends BaseActivity {
         i.putExtra("courseName", course.getCourseName());
         i.putExtra("courseCode", course.getCourseCode());
         startActivity(i);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
 }

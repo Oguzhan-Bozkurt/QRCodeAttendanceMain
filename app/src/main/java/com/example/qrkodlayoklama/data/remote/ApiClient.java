@@ -12,7 +12,7 @@ public final class ApiClient {
 
     private static Retrofit retrofit;
 
-    private static UsersApi usersApi;
+    private static String token;
 
     private ApiClient() {}
 
@@ -49,4 +49,7 @@ public final class ApiClient {
     public static AttendanceApi attendance() { return get().create(AttendanceApi.class); }
 
     public static UsersApi users() { return retrofit.create(UsersApi.class); }
+
+    public static void clearAuth() { token = null; }
+
 }
