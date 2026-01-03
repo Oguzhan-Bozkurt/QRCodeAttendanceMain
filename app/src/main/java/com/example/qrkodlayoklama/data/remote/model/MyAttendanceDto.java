@@ -7,6 +7,7 @@ public class MyAttendanceDto {
     private String courseCode;
     private String checkedAt;
     private String description;
+    private long totalSessions; // Bu alanı ekledim
 
     public long getSessionId() { return sessionId; }
     public long getCourseId() { return courseId; }
@@ -14,4 +15,5 @@ public class MyAttendanceDto {
     public String getCourseCode() { return courseCode; }
     public String getCheckedAt() { return checkedAt; }
     public String getDescription() { return description; }
+    public long getTotalSessions() { return totalSessions; } // ve getter'ını ekledim
 }

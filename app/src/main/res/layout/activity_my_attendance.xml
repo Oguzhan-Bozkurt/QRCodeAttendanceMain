@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/toolbar_main"/>
+    <include layout="@layout/toolbar_main" />
 
     <ProgressBar
         android:id="@+id/progress"
@@ -12,25 +12,22 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:visibility="gone"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"/>
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp" />
 
     <TextView
         android:id="@+id/empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Henüz yoklama kaydı bulunmuyor."
-        android:visibility="gone"
-        android:padding="8dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"/>
+        android:padding="15dp"
+        android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:layout_marginStart="15dp"
-        android:layout_marginEnd="15dp"/>
+        android:paddingBottom="8dp" />
+
 </LinearLayout>

@@ -7,7 +7,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -16,7 +15,12 @@ import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.MyAttendanceDto;
 import com.example.qrkodlayoklama.ui.BaseActivity;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -46,33 +50,63 @@ public class MyAttendanceActivity extends BaseActivity {
     }
 
     private void setLoading(boolean b) {
-        progress.setVisibility(b ? View.VISIBLE : View.GONE);
+        if (progress != null) progress.setVisibility(b ? View.VISIBLE : View.GONE);
     }
 
     private void showListOrEmpty(boolean hasData) {
-        empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
-        recycler.setVisibility(hasData ? View.VISIBLE : View.GONE);
+        if (empty != null)   empty.setVisibility(hasData ? View.GONE : View.VISIBLE);
+        if (recycler != null) recycler.setVisibility(hasData ? View.VISIBLE : View.GONE);
     }
 
     private void load() {
         setLoading(true);
         ApiClient.attendance().myAttendance().enqueue(new Callback<List<MyAttendanceDto>>() {
-            @Override public void onResponse(Call<List<MyAttendanceDto>> call, Response<List<MyAttendanceDto>> resp) {
+            @Override public void onResponse(Call<List<MyAttendanceDto>> call,
+                                             Response<List<MyAttendanceDto>> resp) {
                 setLoading(false);
-                if (resp.isSuccessful() && resp.body() != null) {
-                    List<MyAttendanceDto> data = resp.body();
-                    adapter.setItems(data);
-                    empty.setText("Henüz yoklama kaydı bulunmuyor.");
-                    showListOrEmpty(!data.isEmpty());
-                } else {
+                if (!resp.isSuccessful() || resp.body() == null) {
                     showListOrEmpty(false);
-                    Toast.makeText(MyAttendanceActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MyAttendanceActivity.this,
+                            "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                List<MyAttendanceDto> data = resp.body();
+                empty.setText("Henüz yoklama kaydı bulunmuyor.");
+
+                if (data.isEmpty()) {
+                    adapter.setItems(new ArrayList<>());
+                    showListOrEmpty(false);
+                    return;
+                }
+
+                Map<Long, MyAttendanceAdapter.SummaryItem> map = new LinkedHashMap<>();
+
+                for (MyAttendanceDto it : data) {
+                    long courseId = it.getCourseId();
+
+                    MyAttendanceAdapter.SummaryItem item = map.get(courseId);
+                    if (item == null) {
+                        String cn = it.getCourseName();
+                        String cc = it.getCourseCode();
+                        item = new MyAttendanceAdapter.SummaryItem(courseId, cn, cc);
+                        item.totalSessions = (int) it.getTotalSessions();
+                        map.put(courseId, item);
+                    }
+
+                    item.attended++;
+                }
+
+                List<MyAttendanceAdapter.SummaryItem> summaries = new ArrayList<>(map.values());
+                adapter.setItems(summaries);
+                showListOrEmpty(!summaries.isEmpty());
             }
+
             @Override public void onFailure(Call<List<MyAttendanceDto>> call, Throwable t) {
                 setLoading(false);
                 showListOrEmpty(false);
-                Toast.makeText(MyAttendanceActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(MyAttendanceActivity.this,
+                        "Ağ hatası: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }

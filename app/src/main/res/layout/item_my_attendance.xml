@@ -3,20 +3,25 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="12dp">
+    android:paddingStart="15dp"
+    android:paddingEnd="15dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
 
     <TextView
-        android:id="@+id/tvCourse"
+        android:id="@+id/tvTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ders Adı (KOD)"
+        android:text="Dersin Adı (KOD)"
         android:textStyle="bold"
         android:textSize="16sp"/>
 
     <TextView
-        android:id="@+id/tvCheckedAt"
+        android:id="@+id/tvSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Yoklamaya katılma: 2025-10-01 09:30"
-        android:layout_marginTop="4dp"/>
+        android:text="Oturum sayısı: -   Katıldığı: -"
+        android:textSize="14sp"
+        android:layout_marginTop="6dp"/>
+
 </LinearLayout>
