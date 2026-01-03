@@ -1,9 +1,9 @@
 package com.example.qrkodlayoklama.ui.attendance;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,11 +45,13 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvTitle, tvSummary;
+        int defaultSummaryColor;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
             tvSummary = itemView.findViewById(R.id.tvSummary);
+            defaultSummaryColor = tvSummary.getCurrentTextColor();
         }
 
         public void bind(MyAttendanceSummaryDto item) {
@@ -61,6 +63,17 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
 
             String summaryText = "Oturum sayısı: " + total + "   Katıldığı: " + attended;
             tvSummary.setText(summaryText);
+
+            double percentage = 0;
+            if (total > 0) {
+                percentage = ((double) attended / total) * 100;
+            }
+
+            if (total > 0 && percentage < 70) {
+                tvSummary.setTextColor(Color.RED);
+            } else {
+                tvSummary.setTextColor(defaultSummaryColor);
+            }
         }
     }
 }
