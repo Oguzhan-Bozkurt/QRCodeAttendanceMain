@@ -37,7 +37,7 @@ public class AttendanceRecordsAdapter extends RecyclerView.Adapter<AttendanceRec
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_attendance_record, parent, false);
+                .inflate(R.layout.item_session_record, parent, false);
         return new VH(v);
     }
 
@@ -50,8 +50,9 @@ public class AttendanceRecordsAdapter extends RecyclerView.Adapter<AttendanceRec
         String surname  = safe(r.getSurname());
         String checked  = safe(r.getCheckedAt());
 
-        h.tvLine1.setText(userNo + " - " + name + " " + surname);
-        h.tvLine2.setText("Saat: " + DateFormat.any(checked));
+        String studentInfo = name + " " + surname + " (" + userNo + ")";
+        h.tvStudentInfo.setText(studentInfo);
+        h.tvTime.setText(DateFormat.any(checked));
 
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onItemClick(r);
@@ -64,11 +65,11 @@ public class AttendanceRecordsAdapter extends RecyclerView.Adapter<AttendanceRec
     }
 
     static class VH extends RecyclerView.ViewHolder {
-        final TextView tvLine1, tvLine2;
+        final TextView tvStudentInfo, tvTime;
         VH(@NonNull View itemView) {
             super(itemView);
-            tvLine1 = itemView.findViewById(R.id.tvLine1);
-            tvLine2 = itemView.findViewById(R.id.tvLine2);
+            tvStudentInfo = itemView.findViewById(R.id.tvStudentInfo);
+            tvTime = itemView.findViewById(R.id.tvTime);
         }
     }
 

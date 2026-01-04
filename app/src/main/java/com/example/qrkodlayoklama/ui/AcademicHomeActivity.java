@@ -2,7 +2,7 @@ package com.example.qrkodlayoklama.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 
@@ -17,15 +17,12 @@ public class AcademicHomeActivity extends BaseActivity {
         setContentView(R.layout.activity_academic_home);
         setupToolbar("Akademisyen", false);
 
-        Button btnLogout = findViewById(R.id.btnLogout);
-        btnLogout.setOnClickListener(v -> showLogoutDialog());
-
-        Button btnCreateCourse = findViewById(R.id.btnCreateCourse);
+        View btnCreateCourse = findViewById(R.id.btnCreateCourse);
         btnCreateCourse.setOnClickListener(v ->
                 startActivity(new Intent(this, CourseCreateActivity.class))
         );
 
-        Button btnMyCourses = findViewById(R.id.btnMyCourses);
+        View btnMyCourses = findViewById(R.id.btnMyCourses);
         btnMyCourses.setOnClickListener(v -> {
             startActivity(new Intent(this, CourseListActivity.class));
         });

@@ -1,15 +1,17 @@
 package com.example.qrkodlayoklama.ui.auth;
 
 import android.os.Bundle;
-import android.text.InputFilter;
+import android.view.Menu;
 import android.view.View;
 import android.widget.*;
+
 import androidx.annotation.Nullable;
 
 import com.example.qrkodlayoklama.R;
 import com.example.qrkodlayoklama.data.remote.ApiClient;
 import com.example.qrkodlayoklama.data.remote.model.RegisterRequest;
 import com.example.qrkodlayoklama.ui.BaseActivity;
+import com.google.android.material.textfield.TextInputLayout;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -19,15 +21,17 @@ import retrofit2.Response;
 public class RegisterActivity extends BaseActivity {
 
     private EditText etUsername, etPassword, etName, etSurname;
+    private TextInputLayout tilUsername;
     private Spinner spUserIsStudent, spTitle;
     private Button btnRegister;
 
-    @Override protected void onCreate(@Nullable Bundle savedInstanceState) {
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         setupToolbar("Kayıt Ol", true);
 
-
+        tilUsername = findViewById(R.id.tilUsername);
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
         etName = findViewById(R.id.etName);
@@ -59,19 +63,28 @@ public class RegisterActivity extends BaseActivity {
                     spTitle.setSelection(0);
                 }
             }
-            @Override public void onNothingSelected(AdapterView<?> parent) { }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        return false;
+    }
+
     private void register() {
+        // Clear previous error
+        tilUsername.setError(null);
+
         String userNameStr = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String name = etName.getText().toString().trim();
         String surName = etSurname.getText().toString().trim();
-        boolean userIsStudent = spUserIsStudent.getSelectedItem().toString().equals("Öğrenci") ? true : false;
-        String title = "";
-        if (userIsStudent) title = "Öğrenci";
-        else title = spTitle.getSelectedItem().toString();
+        boolean userIsStudent = spUserIsStudent.getSelectedItem().toString().equals("Öğrenci");
+        String title = userIsStudent ? "Öğrenci" : spTitle.getSelectedItem().toString();
 
         if (userNameStr.isEmpty() || password.isEmpty() || name.isEmpty() || surName.isEmpty()) {
             Toast.makeText(this, "Tüm alanları doldurun", Toast.LENGTH_SHORT).show();
@@ -82,22 +95,28 @@ public class RegisterActivity extends BaseActivity {
         try {
             userName = Long.parseLong(userNameStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Kullanıcı numarası sadece rakam olmalı", Toast.LENGTH_SHORT).show();
+            tilUsername.setError("Kullanıcı numarası sadece rakam olmalı");
             return;
         }
 
         RegisterRequest req = new RegisterRequest(userName, password, name, surName, userIsStudent, title);
         ApiClient.auth().register(req).enqueue(new Callback<ResponseBody>() {
-            @Override public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> resp) {
                 if (resp.isSuccessful()) {
                     Toast.makeText(RegisterActivity.this, "Kayıt başarılı! Giriş yapabilirsiniz.", Toast.LENGTH_LONG).show();
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Hata: " + resp.code(), Toast.LENGTH_SHORT).show();
+                    if (resp.code() == 409) {
+                        tilUsername.setError("Bu kullanıcı adı zaten kullanımda");
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "Bir hata oluştu: " + resp.code(), Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
 
-            @Override public void onFailure(Call<ResponseBody> call, Throwable t) {
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(RegisterActivity.this, "Ağ hatası: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });

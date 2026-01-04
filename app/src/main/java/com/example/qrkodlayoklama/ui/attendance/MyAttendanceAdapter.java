@@ -1,9 +1,9 @@
 package com.example.qrkodlayoklama.ui.attendance;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,27 +15,39 @@ import com.example.qrkodlayoklama.data.remote.model.MyAttendanceSummaryDto;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapter.ViewHolder> {
+public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapter.VH> {
+    private final List<MyAttendanceSummaryDto> items = new ArrayList<>();
 
-    private List<MyAttendanceSummaryDto> items = new ArrayList<>();
-
-    public void setItems(List<MyAttendanceSummaryDto> items) {
-        this.items = items;
+    public void setItems(List<MyAttendanceSummaryDto> newItems) {
+        items.clear();
+        if (newItems != null) items.addAll(newItems);
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_my_attendance, parent, false);
-        return new ViewHolder(view);
+        return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        MyAttendanceSummaryDto item = items.get(position);
-        holder.bind(item);
+    public void onBindViewHolder(@NonNull VH h, int position) {
+        MyAttendanceSummaryDto r = items.get(position);
+
+        h.tvTitle.setText(r.getCourseName());
+        h.tvCode.setText(r.getCourseCode());
+
+        String summary = "Katılım: " + r.getAttendedSessions() + "/" + r.getTotalSessions();
+        h.tvSummary.setText(summary);
+
+        if (r.getTotalSessions() > 0) {
+            int progress = (int) ((r.getAttendedSessions() * 100.0f) / r.getTotalSessions());
+            h.progressAttendance.setProgress(progress);
+        } else {
+            h.progressAttendance.setProgress(0);
+        }
     }
 
     @Override
@@ -43,37 +55,16 @@ public class MyAttendanceAdapter extends RecyclerView.Adapter<MyAttendanceAdapte
         return items.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvSummary;
-        int defaultSummaryColor;
+    static class VH extends RecyclerView.ViewHolder {
+        final TextView tvTitle, tvCode, tvSummary;
+        final ProgressBar progressAttendance;
 
-        public ViewHolder(@NonNull View itemView) {
+        VH(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvTitle);
+            tvCode = itemView.findViewById(R.id.tvCode);
             tvSummary = itemView.findViewById(R.id.tvSummary);
-            defaultSummaryColor = tvSummary.getCurrentTextColor();
-        }
-
-        public void bind(MyAttendanceSummaryDto item) {
-            String titleText = item.getCourseName() + " (" + item.getCourseCode() + ")";
-            tvTitle.setText(titleText);
-
-            int total = item.getTotalSessions();
-            int attended = item.getAttendedSessions();
-
-            String summaryText = "Oturum sayısı: " + total + "   Katıldığı: " + attended;
-            tvSummary.setText(summaryText);
-
-            double percentage = 0;
-            if (total > 0) {
-                percentage = ((double) attended / total) * 100;
-            }
-
-            if (total > 0 && percentage < 70) {
-                tvSummary.setTextColor(Color.RED);
-            } else {
-                tvSummary.setTextColor(defaultSummaryColor);
-            }
+            progressAttendance = itemView.findViewById(R.id.progressAttendance);
         }
     }
 }
