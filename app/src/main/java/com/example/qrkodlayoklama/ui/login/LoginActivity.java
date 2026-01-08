@@ -36,8 +36,8 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
         progress = findViewById(R.id.progress);
-        btnLogin.setOnClickListener(v -> doLogin());
 
+        btnLogin.setOnClickListener(v -> doLogin());
         btnRegister.setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class))
         );

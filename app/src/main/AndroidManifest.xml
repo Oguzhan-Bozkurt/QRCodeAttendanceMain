@@ -27,7 +27,7 @@
         <activity android:name=".ui.StudentHomeActivity" android:exported="false"/>
         <activity android:name=".ui.course.CourseCreateActivity" android:exported="false"/>
         <activity android:name=".ui.course.CourseListActivity" android:exported="false"/>
-        <activity android:name=".ui.attendance.QrShowActivity" android:exported="false"/>
+        <activity android:name=".ui.attendance.QrShowActivity" android:exported="false" android:windowSoftInputMode="adjustPan"/>
         <activity android:name=".ui.attendance.QrScanActivity" android:exported="false"/>
         <activity android:name=".ui.attendance.AttendanceRecordsActivity" android:exported="false"/>
         <activity android:name=".ui.attendance.AttendanceHistoryActivity" android:exported="false"/>
